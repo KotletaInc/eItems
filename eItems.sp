@@ -9,7 +9,7 @@
 
 #define TAG_NCLR "[eItems]"
 #define AUTHOR "ESK0"
-#define VERSION "0.1"
+#define VERSION "0.2"
 
 
 ConVar g_cvHibernationWhenEmpty;
@@ -31,10 +31,11 @@ enum struct eWeaponInfo
     char WorldModel[PLATFORM_MAX_PATH];
     ArrayList Paints;
     int Team;
-    int ClipSize;
+    int Slot;
+    int ClipAmmo;
     int ReserveAmmo;
     int MaxPlayerSpeed;
-    int InGamePrice;
+    int Price;
     float CycleTime;
     float Spread;
     int Damage;
@@ -93,7 +94,7 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     CreateNatives();
     CreateForwards();
     return APLRes_Success;
-    }
+}
 
 public void ParseItems()
 {
@@ -178,25 +179,45 @@ public void ParseWeapons(JSONArray array)
     char szWeaponWorldModel[PLATFORM_MAX_PATH];
     char szPosTemp[12];
     char szWepDefIndex[12];
-    int iSkinDefIndex = 0;
-    int iWepDefIndex = 0;
-    int iTeam = 0;
-    int iClipSize = -1;
-    int iReserveAmmo = -1;
-    int iMaxPlayerSpeed = -1;
-    int iInGamePrice = -1;
-    int iDamage = -1;
-    int iFullAuto = -1;
+    int iSkinDefIndex;
+    int iWepDefIndex;
+    int iTeam;
+    int iSlot;
+    int iClipAmmo;
+    int iReserveAmmo;
+    int iMaxPlayerSpeed;
+    int iPrice;
+    int iDamage;
+    int iFullAuto;
 
-    float fCycleTime = 0.0;
-    float fSpread = 0.0;
+    float fCycleTime;
+    float fSpread;
  
     for(int iWeaponNum = 0; iWeaponNum < array.Length; iWeaponNum++)
     {
+        iSkinDefIndex = 0;
+        iWepDefIndex = 0;
+        iTeam = 0;
+        iSlot = -1;
+        iClipAmmo = -1;
+        iReserveAmmo = -1;
+        iMaxPlayerSpeed = -1;
+        iPrice = -1;
+        iDamage = -1;
+        iFullAuto = -1;
+
+        fCycleTime = 0.0;
+        fSpread = 0.0;
+ 
         jItem = view_as<JSONObject>(array.Get(iWeaponNum));
         iWepDefIndex = jItem.GetInt("def_index");
         iTeam = jItem.GetInt("team");
 
+        if(jItem.HasKey("slot"))
+        {
+            iSlot = jItem.GetInt("slot");
+        }
+        
         jItem.GetString("item_name", szWeaponDisplayName, sizeof(szWeaponDisplayName));
         jItem.GetString("class_name", szWeaponClassname, sizeof(szWeaponClassname));
         jItem.GetString("view_model", szWeaponViewModel, sizeof(szWeaponViewModel));
@@ -224,7 +245,7 @@ public void ParseWeapons(JSONArray array)
             
             if(jAttributesObj.HasKey("primary_clip_size"))
             {
-                iClipSize = jAttributesObj.GetInt("primary_clip_size");
+                iClipAmmo = jAttributesObj.GetInt("primary_clip_size");
             }
 
             if(jAttributesObj.HasKey("primary_reserve_ammo_max"))
@@ -239,7 +260,7 @@ public void ParseWeapons(JSONArray array)
 
             if(jAttributesObj.HasKey("in_game_price"))
             {
-                iInGamePrice = jAttributesObj.GetInt("in_game_price");
+                iPrice = jAttributesObj.GetInt("in_game_price");
             }
 
             if(jAttributesObj.HasKey("damage"))
@@ -268,6 +289,8 @@ public void ParseWeapons(JSONArray array)
             delete jAttributesObj;
         }
 
+        delete jItem;
+
         eWeaponInfo WeaponInfo;
 
         strcopy(WeaponInfo.DisplayName,     sizeof(eWeaponInfo::DisplayName),   szWeaponDisplayName);
@@ -281,10 +304,11 @@ public void ParseWeapons(JSONArray array)
         WeaponInfo.WeaponNum            = iWeaponNum;
         WeaponInfo.Paints               = arWeaponPaints;
         WeaponInfo.Team                 = iTeam;
-        WeaponInfo.ClipSize             = iClipSize;
+        WeaponInfo.Slot                 = iSlot;
+        WeaponInfo.ClipAmmo             = iClipAmmo;
         WeaponInfo.ReserveAmmo          = iReserveAmmo;
         WeaponInfo.MaxPlayerSpeed       = iMaxPlayerSpeed;
-        WeaponInfo.InGamePrice          = iInGamePrice;
+        WeaponInfo.Price                = iPrice;
         WeaponInfo.Damage               = iDamage;
         WeaponInfo.FullAuto             = iFullAuto;
         WeaponInfo.CycleTime            = fCycleTime;
@@ -293,7 +317,6 @@ public void ParseWeapons(JSONArray array)
         g_smWeaponInfo.SetArray(szWepDefIndex, WeaponInfo, sizeof(eWeaponInfo));
         g_arWeaponsNum.Push(iWepDefIndex);
     }
-    delete jItem;
     PrintToServer("%s %i weapons synced successfully!", TAG_NCLR, array.Length);
 }
 
@@ -322,8 +345,8 @@ public void ParsePaints(JSONArray array)
 
         IntToString(iDefIndex, szSkinDef, sizeof(szSkinDef));
         g_smSkinsNames.SetString(szSkinDef, szDisplayName);
+        delete jItem;
     }
-    delete jItem;
     PrintToServer("%s %i paints synced successfully!", TAG_NCLR, array.Length);
 }
 
@@ -342,4 +365,9 @@ stock void CheckHibernation(bool bToDefault = false)
 
     PrintToServer("%s Hibernation disabled", TAG_NCLR);
     g_cvHibernationWhenEmpty.SetInt(0);
+}
+
+stock bool IsValidClient(int client, bool alive = false)
+{
+    return (0 < client && client <= MaxClients && IsClientInGame(client) && IsFakeClient(client) == false && (alive == false || IsPlayerAlive(client)));
 }

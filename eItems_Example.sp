@@ -41,9 +41,21 @@ public void OnPluginStart()
 public void eItems_OnItemsSynced()
 {
     int iWeaponsCount = eItems_GetWeaponCount();
-    int iPaintsCount = eItems_GetPaintsCount();
-    PrintToServer("%s Weapons: %i | Paints: %i", TAG_NCLR, iWeaponsCount, iPaintsCount);
 
-    PrintToServer("%s Weapon Num = %i ", TAG_NCLR, eItems_GetWeaponNumByClassName("weapon_usp_silencer"));
+    int iDefIndex;
+    char szDisplayName[48];
+    char szClassName[48];
+    int iIsKnife;
+    int iIsSkinnable;
+    for(int i = 0; i < iWeaponsCount; i++)
+    {
+        iDefIndex = eItems_GetWeaponDefIndexByWeaponNum(i);
+        iIsKnife = view_as<int>(eItems_IsDefIndexKnife(iDefIndex));
+        iIsSkinnable = view_as<int>(eItems_IsSkinnableDefIndex(iDefIndex));
+        
+        eItems_GetWeaponClassNameByWeaponNum(i, szClassName, sizeof(szClassName));
+        eItems_GetWeaponDisplayNameByWeaponNum(i, szDisplayName, sizeof(szDisplayName));
+        PrintToServer("%s Def: %i | Display: %s | ClassName: %s | IsKnife: %i | Skinnable: %i", TAG_NCLR, iDefIndex, szDisplayName, szClassName, iIsKnife, iIsSkinnable);
+    }
 }
 
