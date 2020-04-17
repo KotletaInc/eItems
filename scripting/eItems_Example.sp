@@ -44,18 +44,27 @@ public void eItems_OnItemsSynced()
 
     int iDefIndex;
     char szDisplayName[48];
-    char szClassName[48];
-    int iIsKnife;
-    int iIsSkinnable;
+    int iTeam;
+    int iPrice;
+    int iMaxSpeed;
+    int iDamage;
+    int iIsFullAuto;
+    float fSpread;
+    float fCycleTime;
+
     for(int i = 0; i < iWeaponsCount; i++)
     {
         iDefIndex = eItems_GetWeaponDefIndexByWeaponNum(i);
-        iIsKnife = view_as<int>(eItems_IsDefIndexKnife(iDefIndex));
-        iIsSkinnable = view_as<int>(eItems_IsSkinnableDefIndex(iDefIndex));
-        
-        eItems_GetWeaponClassNameByWeaponNum(i, szClassName, sizeof(szClassName));
+        iTeam = eItems_GetWeaponTeamByDefIndex(iDefIndex);
+        iPrice = eItems_GetWeaponPriceByDefIndex(iDefIndex);
+        iMaxSpeed = eItems_GetWeaponMaxPlayerSpeedByDefIndex(iDefIndex);
+        iDamage = eItems_GetWeaponDamageByDefIndex(iDefIndex);
+        iIsFullAuto = view_as<int>(eItems_IsWeaponFullAutoByDefIndex(iDefIndex));
+        fSpread = eItems_GetWeaponSpreadByDefIndex(iDefIndex);
+        fCycleTime = eItems_GetWeaponCycleTimeByDefIndex(iDefIndex);
+
         eItems_GetWeaponDisplayNameByWeaponNum(i, szDisplayName, sizeof(szDisplayName));
-        PrintToServer("%s Def: %i | Display: %s | ClassName: %s | IsKnife: %i | Skinnable: %i", TAG_NCLR, iDefIndex, szDisplayName, szClassName, iIsKnife, iIsSkinnable);
+        PrintToServer("%s Def: %i | Display: %s | Team: %i | Price: %i | MaxSpeed: %i | Damage: %i | FullAuto: %i | Spread: %f | CycleTime: %f", TAG_NCLR, iDefIndex, szDisplayName, iTeam, iPrice, iMaxSpeed, iDamage, iIsFullAuto, fSpread, fCycleTime);
     }
 }
 

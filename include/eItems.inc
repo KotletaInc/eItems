@@ -3,13 +3,85 @@
 #endif
 #define _eItems_included_
 
+#define SEQUENCE_DEFAULT_DRAW 0
+#define SEQUENCE_DEFAULT_IDLE1 1
+#define SEQUENCE_DEFAULT_IDLE2 2
+#define SEQUENCE_DEFAULT_LIGHT_MISS1 3
+#define SEQUENCE_DEFAULT_LIGHT_MISS2 4
+#define SEQUENCE_DEFAULT_LIGHT_HIT1 5
+#define SEQUENCE_DEFAULT_LIGHT_HIT2 6
+#define SEQUENCE_DEFAULT_LIGHT_BACKSTAB1 7
+#define SEQUENCE_DEFAULT_LIGHT_BACKSTAB2 8
+#define SEQUENCE_DEFAULT_HEAVY_MISS1 9
+#define SEQUENCE_DEFAULT_HEAVY_HIT1 10
+#define SEQUENCE_DEFAULT_HEAVY_BACKSTAB1 11
+#define SEQUENCE_DEFAULT_LOOKAT01 12
 
-native int eItems_GetWeaponCount();
-native int eItems_GetPaintsCount();
-native bool eItems_AreItemsSynced();
+#define SEQUENCE_BUTTERFLY_DRAW1 0
+#define SEQUENCE_BUTTERFLY_DRAW2 1
+#define SEQUENCE_BUTTERFLY_IDLE1 2
+#define SEQUENCE_BUTTERFLY_IDLE2 3
+#define SEQUENCE_BUTTERFLY_LIGHT_MISS1 4
+#define SEQUENCE_BUTTERFLY_LIGHT_MISS2 5
+#define SEQUENCE_BUTTERFLY_LIGHT_HIT1 6
+#define SEQUENCE_BUTTERFLY_LIGHT_HIT2 7
+#define SEQUENCE_BUTTERFLY_LIGHT_BACKSTAB1 8
+#define SEQUENCE_BUTTERFLY_LIGHT_BACKSTAB2 9
+#define SEQUENCE_BUTTERFLY_HEAVY_MISS1 10
+#define SEQUENCE_BUTTERFLY_HEAVY_HIT1 11
+#define SEQUENCE_BUTTERFLY_HEAVY_BACKSTAB1 12
+#define SEQUENCE_BUTTERFLY_LOOKAT01 13
+#define SEQUENCE_BUTTERFLY_LOOKAT02 14
+#define SEQUENCE_BUTTERFLY_LOOKAT03 15
 
-forward void eItems_OnItemsSynced();
+#define SEQUENCE_FALCHION_IDLE1 1
+#define SEQUENCE_FALCHION_HEAVY_MISS1 8
+#define SEQUENCE_FALCHION_HEAVY_MISS1_NOFLIP 9
+#define SEQUENCE_FALCHION_LOOKAT01 12
+#define SEQUENCE_FALCHION_LOOKAT02 13
 
+#define SEQUENCE_DAGGERS_DRAW 0
+#define SEQUENCE_DAGGERS_IDLE1 1
+#define SEQUENCE_DAGGERS_LIGHT_MISS1 2
+#define SEQUENCE_DAGGERS_LIGHT_MISS2 3
+#define SEQUENCE_DAGGERS_LIGHT_MISS3 4
+#define SEQUENCE_DAGGERS_LIGHT_MISS4 5
+#define SEQUENCE_DAGGERS_LIGHT_MISS5 6
+#define SEQUENCE_DAGGERS_LIGHT_HIT1 7
+#define SEQUENCE_DAGGERS_LIGHT_HIT2 8
+#define SEQUENCE_DAGGERS_LIGHT_BACKSTAB1 9
+#define SEQUENCE_DAGGERS_LIGHT_BACKSTAB2 10
+#define SEQUENCE_DAGGERS_HEAVY_MISS1 11
+#define SEQUENCE_DAGGERS_HEAVY_MISS2 12
+#define SEQUENCE_DAGGERS_HEAVY_HIT1 13
+#define SEQUENCE_DAGGERS_HEAVY_BACKSTAB1 14
+#define SEQUENCE_DAGGERS_LOOKAT01 15
+
+#define SEQUENCE_BOWIE_DRAW 0
+#define SEQUENCE_BOWIE_IDLE1 1
+#define SEQUENCE_BOWIE_LIGHT_MISS1 2
+#define SEQUENCE_BOWIE_LIGHT_MISS2 3
+#define SEQUENCE_BOWIE_LIGHT_HIT1 4
+#define SEQUENCE_BOWIE_LIGHT_HIT2 5
+#define SEQUENCE_BOWIE_LIGHT_BACKSTAB1 6
+#define SEQUENCE_BOWIE_LIGHT_BACKSTAB2 7
+#define SEQUENCE_BOWIE_HEAVY_MISS1 8
+#define SEQUENCE_BOWIE_HEAVY_HIT1 9
+#define SEQUENCE_BOWIE_HEAVY_BACKSTAB1 10
+#define SEQUENCE_BOWIE_LOOKAT01 11
+
+
+
+native int      eItems_GetWeaponCount();
+native int      eItems_GetPaintsCount();
+
+
+native bool     eItems_AreItemsSynced();
+native bool     eItems_AreItemsSyncing();
+native bool     eItems_ReSync();
+
+forward void    eItems_OnItemsSynced();
+forward void    eItems_OnWeaponGiven(const int client, const int iWeapon, const char[] szClassName, const int iWeaponDefIndex, const int iSlot, const bool Skinnable, const bool Knife);
 
 /*              Weapons             */
 
@@ -22,19 +94,28 @@ native int      eItems_GetWeaponDefIndexByWeaponNum(int iWeaponNum);
 native int      eItems_GetWeaponDefIndexByClassName(const char[] szClassName); 
 native int      eItems_GetWeaponDefIndexByWeapon(int iWeapon); 
 native bool     eItems_IsDefIndexKnife(int iDefIndex);
-native int      eItems_GetActiveWeaponNum(int iClient);
-native int      eItems_GetActiveWeaponDefIndex(int iClient);
-native int      eItems_GetActiveWeapon(int iClient);
-native int      eItems_GetActiveWeaponClassName(int iClient, char[] szBuffer, int iLength);
+native int      eItems_GetActiveWeaponNum(int client);
+native int      eItems_GetActiveWeaponDefIndex(int client);
+native int      eItems_GetActiveWeapon(int client);
+native int      eItems_GetActiveWeaponClassName(int client, char[] szBuffer, int iLength);
 native bool     eItems_IsSkinnableDefIndex(int iDefIndex);
-native int      eItems_FindWeaponByWeaponNum(int iClient, int iWeaponNum);
-native int      eItems_FindWeaponByDefIndex(int iClient, int iDefIndex);
-native int      eItems_FindWeaponByClassName(int iClient, const char[] szClassName);
+native int      eItems_FindWeaponByWeaponNum(int client, int iWeaponNum);
+native int      eItems_FindWeaponByDefIndex(int client, int iDefIndex);
+native int      eItems_FindWeaponByClassName(int client, const char[] szClassName);
 native bool     eItems_RefillClipAmmo(int iWeapon);
 native bool     eItems_RefillReserveAmmo(int iWeapon);
 native bool     eItems_IsValidWeapon(int iWeapon);
-
-
+native int      eItems_GiveWeapon(int client, const char[] szClassName, int iReserveAmmo = -1, int iClipAmmo = -1, int iSwitchTo = -1);
+native bool     eItems_RemoveKnife(int client);
+native bool     eItems_RemoveWeapon(int client, int iWeapon);
+native int      eItems_RespawnWeapon(int client, int iWeapon);
+native int      eItems_RespawnWeaponBySlot(int client, int iWeaponSlot);
+native int      eItems_RemoveAllWeapons(int client, int iSkipSlot = -1);
+native bool     eItems_SetWeaponAmmo(int iWeapon, int iReserveAmmo = -1, int iClipAmmo = -1);
+native bool     eItems_SetAllWeaponsAmmoByClassName(const char[] szClassName, int iReserveAmmo = -1, int iClipAmmo = -1);
+native bool     eItems_SetAllWeaponsAmmo(int iReserveAmmo = -1, int iClipAmmo = -1);
+native bool     eItems_SetActiveWeapon(int client, int iWeapon);
+native bool     eItems_DropWeapon(int client, int iWeapon);
 
     /*  ClassNames  */
 
@@ -107,10 +188,10 @@ native int      eItems_GetWeaponMaxPlayerSpeedByClassName(const char[] szClassNa
 
     /*     Damage     */
 
-native int      eItems_GetWeaponDamageSpeedByWeaponNum(int iWeaponNum);
-native int      eItems_GetWeaponDamageSpeedByDefIndex(int iDefIndex);
-native int      eItems_GetWeaponDamageSpeedByWeapon(int iWeapon);
-native int      eItems_GetWeaponDamageSpeedByClassName(const char[] szClassName);
+native int      eItems_GetWeaponDamageByWeaponNum(int iWeaponNum);
+native int      eItems_GetWeaponDamageByDefIndex(int iDefIndex);
+native int      eItems_GetWeaponDamageByWeapon(int iWeapon);
+native int      eItems_GetWeaponDamageByClassName(const char[] szClassName);
 
     /*     Full Auto     */
 

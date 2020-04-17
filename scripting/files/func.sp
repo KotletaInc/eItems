@@ -1,19 +1,24 @@
-public int eGetWeaponCount()
+public int GetWeaponCount()
 {
     return g_iWeaponCount;
 }
 
-public int eGetPaintsCount()
+public int GetPaintsCount()
 {
     return g_iPaintsCount;
 }
 
-public bool eAreItemsSynced()
+public bool AreItemsSynced()
 {
     return g_bItemsSynced;
 }
 
-public int eGetWeaponNumByDefIndex(int iDefIndex)
+public bool AreItemsSyncing()
+{
+    return g_bItemsSyncing;
+}
+
+public int GetWeaponNumByDefIndex(int iDefIndex)
 {
     return g_arWeaponsNum.FindValue(iDefIndex);
 }
@@ -108,6 +113,25 @@ public bool IsValidWeapon(int iWeapon)
         return true;
     }
 
+    return false;
+}
+
+public bool IsValidWeaponClassName(const char[] szClassName)
+{
+    char szWeaponClassName[48];
+    for(int iWeaponNum = 0; iWeaponNum < g_arWeaponsNum.Length; iWeaponNum++)
+    {
+        if(!GetWeaponClassNameByWeaponNum(iWeaponNum, szWeaponClassName, sizeof(szWeaponClassName)))
+        {
+            continue;
+        }
+
+        if(strcmp(szWeaponClassName, szClassName) != 0)
+        {
+            continue;
+        }
+        return true;
+    }	
     return false;
 }
 
@@ -1330,4 +1354,681 @@ public bool RefillReserveAmmo(int iWeapon)
     g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
     int iReserveAmmo = WeaponInfo.ReserveAmmo;
     return SetWeaponAmmo(iWeapon, iReserveAmmo, -1);
+}
+
+public int GiveWeapon(int client, const char[] szClassName, int iReserveAmmo, int iClipAmmo, int iSwitchTo)
+{
+    if (!IsValidClient(client, true))
+    {
+        return -1;
+    }
+
+    int iTeam = GetClientTeam(client);
+
+    if(iTeam != CS_TEAM_T || iTeam != CS_TEAM_CT)
+    {
+        return -1;
+    }
+	
+    int iViewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
+    int iViewSequence = -1;
+
+    if (iViewModel > -1 && IsValidEntity(iViewModel))
+    {
+        iViewSequence = GetEntProp(iViewModel, Prop_Send, "m_nSequence");
+    }
+
+    if(!IsValidWeaponClassName(szClassName))
+    {
+        return -1;
+    }
+
+    int iWeaponTeam = GetWeaponTeamByClassName(szClassName);
+    int iWeaponDefIndex = GetWeaponDefIndexByClassName(szClassName);
+    int iLookingAtWeapon = GetEntProp(client, Prop_Send, "m_bIsLookingAtWeapon");
+    int iHoldingLookAtWeapon = GetEntProp(client, Prop_Send, "m_bIsHoldingLookAtWeapon");
+    int iReloadVisuallyComplete = -1;
+    int iWeaponSilencer = -1;
+    int iWeaponMode = -1;
+    int iRecoilIndex = -1;
+    int iIronSightMode = -1;
+    int iZoomLevel = -1;
+    int iCurrentSlot = GetWeaponSlotByClassName(szClassName);
+    int iCurrentWeapon = GetPlayerWeaponSlot(client, iCurrentSlot);
+    int iHudFlags = GetEntProp(client, Prop_Send, "m_iHideHUD");
+
+    float fNextPlayerAttackTime = GetEntPropFloat(client, Prop_Send, "m_flNextAttack");
+    float fDoneSwitchingSilencer = -1.0;
+    float fNextPrimaryAttack = -1.0;
+    float fNextSecondaryAttack = -1.0;
+    float fTimeWeaponIdle = -1.0;
+    float fAccuracyPenalty = -1.0;
+    float fLastShotTime = -1.0;
+
+    char szCurrentClassName[48];
+    bool bKnife = IsDefIndexKnife(iWeaponDefIndex);
+	
+    if(IsValidWeapon(iCurrentWeapon))
+    {
+        GetWeaponClassNameByWeapon(iCurrentWeapon, szCurrentClassName, sizeof(szCurrentClassName));
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_flNextPrimaryAttack"))
+        {
+            fNextPrimaryAttack = GetEntPropFloat(iCurrentWeapon, Prop_Send, "m_flNextPrimaryAttack");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_flNextSecondaryAttack"))
+        {
+            fNextSecondaryAttack = GetEntPropFloat(iCurrentWeapon, Prop_Send, "m_flNextSecondaryAttack");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_flTimeWeaponIdle"))
+        {
+            fTimeWeaponIdle = GetEntPropFloat(iCurrentWeapon, Prop_Send, "m_flTimeWeaponIdle");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_fAccuracyPenalty"))
+        {
+            fAccuracyPenalty = GetEntPropFloat(iCurrentWeapon, Prop_Send, "m_fAccuracyPenalty");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_bReloadVisuallyComplete"))
+        {
+            iReloadVisuallyComplete = GetEntProp(iCurrentWeapon, Prop_Send, "m_bReloadVisuallyComplete");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_bSilencerOn"))
+        {
+            iWeaponSilencer = GetEntProp(iCurrentWeapon, Prop_Send, "m_bSilencerOn");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_weaponMode"))
+        {
+            iWeaponMode = GetEntProp(iCurrentWeapon, Prop_Send, "m_weaponMode");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_iRecoilIndex"))
+        {
+            iRecoilIndex = GetEntProp(iCurrentWeapon, Prop_Send, "m_iRecoilIndex");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_iIronSightMode"))
+        {
+            iIronSightMode = GetEntProp(iCurrentWeapon, Prop_Send, "m_iIronSightMode");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_flDoneSwitchingSilencer"))
+        {
+            fDoneSwitchingSilencer = GetEntPropFloat(iCurrentWeapon, Prop_Send, "m_flDoneSwitchingSilencer");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_fLastShotTime"))
+        {
+            fLastShotTime = GetEntPropFloat(iCurrentWeapon, Prop_Send, "m_fLastShotTime");
+        }
+
+        if(HasEntProp(iCurrentWeapon, Prop_Send, "m_zoomLevel"))
+        {
+            iZoomLevel = GetEntProp(iCurrentWeapon, Prop_Send, "m_zoomLevel");
+        }
+
+        if(bKnife)
+        {
+            if (!RemoveKnife(client))
+            {
+                ClientInfo[client].GivingWeapon = false;
+                return -1;
+            }
+        }
+        else if(!RemoveWeapon(client, iCurrentWeapon))
+        {
+            ClientInfo[client].GivingWeapon = false;
+            return -1;
+        }
+    }
+	
+    if(iTeam != iWeaponTeam && iWeaponTeam > CS_TEAM_SPECTATOR)
+    {
+        SetEntProp(client, Prop_Send, "m_iTeamNum", iWeaponTeam);
+    }
+
+    ClientInfo[client].GivingWeapon = true;
+
+    int iWeapon = -1;
+    bool bGiven = false;
+
+    if(!bGiven)
+    {		
+        iWeapon = GivePlayerItem(client, szClassName);
+        bGiven = IsValidWeapon(iWeapon);
+    }
+    if(!IsValidWeapon(iWeapon) || !bGiven)
+    {
+        if(iWeaponTeam > CS_TEAM_SPECTATOR && GetClientTeam(client) != iTeam)
+        {
+            SetEntProp(client, Prop_Send, "m_iTeamNum", iTeam);
+        }
+
+        ClientInfo[client].GivingWeapon = false;
+
+        if (iWeapon > 0 && IsValidEdict(iWeapon) && IsValidEntity(iWeapon))
+        {
+            AcceptEntityInput(iWeapon, "Kill");
+        }
+
+        return -1;
+    }
+	
+    iWeaponDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+    if(!bKnife)
+    {
+        SetWeaponAmmo(iWeapon, iReserveAmmo, iClipAmmo);
+    }
+    else
+    {
+        EquipPlayerWeapon(client, iWeapon);
+    }
+	
+    int iSwitchWeapon = -1;
+	
+    if(iSwitchTo >= CS_SLOT_PRIMARY && iSwitchTo <= CS_SLOT_C4)
+    {
+        iSwitchWeapon = GetPlayerWeaponSlot(client, iSwitchTo);
+
+        if(IsValidWeapon(iSwitchWeapon))
+        {
+            SetActiveWeapon(client, iSwitchWeapon);
+        }
+    }
+	
+    int iActiveWeapon = GetActiveWeapon(client);
+	
+    if(iActiveWeapon == iWeapon)
+    {
+        if(iSwitchWeapon == iWeapon)
+        {
+            if(StrEqual(szClassName, szCurrentClassName, false))
+            {
+                if(iLookingAtWeapon > -1 && HasEntProp(client, Prop_Send, "m_bIsLookingAtWeapon"))
+                {
+                    SetEntProp(client, Prop_Send, "m_bIsLookingAtWeapon", iLookingAtWeapon);
+                }
+
+                if(iHoldingLookAtWeapon > -1 && HasEntProp(client, Prop_Send, "m_bIsHoldingLookAtWeapon"))
+                {
+                    SetEntProp(client, Prop_Send, "m_bIsHoldingLookAtWeapon", iHoldingLookAtWeapon);
+                }
+
+                if(fNextPlayerAttackTime > -1.0 && HasEntProp(client, Prop_Send, "m_flNextAttack"))
+                {
+                    SetEntPropFloat(client, Prop_Send, "m_flNextAttack", fNextPlayerAttackTime);
+                }
+
+                if(fNextPrimaryAttack > -1.0 && HasEntProp(iCurrentWeapon, Prop_Send, "m_flNextPrimaryAttack"))
+                {
+                    SetEntPropFloat(iWeapon, Prop_Send, "m_flNextPrimaryAttack", fNextPrimaryAttack);
+                }
+
+                if(fNextSecondaryAttack > -1.0 && HasEntProp(iCurrentWeapon, Prop_Send, "m_flNextSecondaryAttack"))
+                {
+                    SetEntPropFloat(iWeapon, Prop_Send, "m_flNextSecondaryAttack", fNextSecondaryAttack);
+                }
+
+                if(fTimeWeaponIdle > -1.0 && HasEntProp(iCurrentWeapon, Prop_Send, "m_flTimeWeaponIdle"))
+                {
+                    SetEntPropFloat(iWeapon, Prop_Send, "m_flTimeWeaponIdle", fTimeWeaponIdle);
+                }
+
+                if(fAccuracyPenalty > -1.0 && HasEntProp(iCurrentWeapon, Prop_Send, "m_fAccuracyPenalty"))
+                {
+                    SetEntPropFloat(iWeapon, Prop_Send, "m_fAccuracyPenalty", fAccuracyPenalty);
+                }
+
+                if(fDoneSwitchingSilencer > -1.0 && HasEntProp(iCurrentWeapon, Prop_Send, "m_flDoneSwitchingSilencer"))
+                {
+                    SetEntPropFloat(iWeapon, Prop_Send, "m_flDoneSwitchingSilencer", fDoneSwitchingSilencer);
+                }
+
+                if(fLastShotTime > -1.0 && HasEntProp(iCurrentWeapon, Prop_Send, "m_fLastShotTime"))
+                {
+                    SetEntPropFloat(iWeapon, Prop_Send, "m_fLastShotTime", fLastShotTime);
+                }
+
+                if(iReloadVisuallyComplete > -1 && HasEntProp(iCurrentWeapon, Prop_Send, "m_bReloadVisuallyComplete"))
+                {
+                    SetEntProp(iWeapon, Prop_Send, "m_bReloadVisuallyComplete", iReloadVisuallyComplete);
+                }
+
+                if(iWeaponSilencer > -1 && HasEntProp(iCurrentWeapon, Prop_Send, "m_bSilencerOn"))
+                {
+                    SetEntProp(iWeapon, Prop_Send, "m_bSilencerOn", iWeaponSilencer);
+                }
+
+                if(iWeaponMode > -1 && HasEntProp(iCurrentWeapon, Prop_Send, "m_weaponMode"))
+                {
+                    SetEntProp(iWeapon, Prop_Send, "m_weaponMode", iWeaponMode);
+                }
+
+                if(iRecoilIndex > -1 && HasEntProp(iCurrentWeapon, Prop_Send, "m_iRecoilIndex"))
+                {
+                    SetEntProp(iWeapon, Prop_Send, "m_iRecoilIndex", iRecoilIndex);
+                }
+
+                if(iIronSightMode > -1 && HasEntProp(iCurrentWeapon, Prop_Send, "m_iIronSightMode"))
+                {
+                    SetEntProp(iWeapon, Prop_Send, "m_iIronSightMode", iIronSightMode);
+                }
+
+                if(iZoomLevel > -1 && HasEntProp(iCurrentWeapon, Prop_Send, "m_zoomLevel"))
+                {
+                    SetEntProp(iWeapon, Prop_Send, "m_zoomLevel", iZoomLevel);
+                }
+            }
+
+            if(bKnife)
+            {
+                switch(iWeaponDefIndex)
+                {
+                    case 515 : iViewSequence = SEQUENCE_BUTTERFLY_IDLE1;   // Butterfly
+                    case 512 : iViewSequence = SEQUENCE_FALCHION_IDLE1;    // Falchion
+                    case 516: iViewSequence = SEQUENCE_DAGGERS_IDLE1;   // Butt Plugs
+                    case 514: iViewSequence = SEQUENCE_BOWIE_IDLE1;   // Bowie
+                    default: iViewSequence = SEQUENCE_DEFAULT_IDLE2;
+                }
+            }
+            else if(StrEqual(szClassName, "weapon_m4a1_silencer", false))
+            {
+                iViewSequence = 1;
+            }
+            else
+            {
+                iViewSequence = 0;
+            }
+        }
+    }
+	
+    if(!IsValidEntity(iViewModel))
+    {
+        iViewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
+    }
+
+    if(IsValidEntity(iViewModel) && iViewSequence > -1)
+    {
+        SetEntProp(iViewModel, Prop_Send, "m_nSequence", iViewSequence);
+    }
+
+    SetEntProp(client, Prop_Send, "m_iHideHUD", iHudFlags);
+
+    if(iWeaponTeam > 1 && GetClientTeam(client) != iTeam)
+    {
+        SetEntProp(client, Prop_Send, "m_iTeamNum", iTeam);
+    }
+	
+    ClientInfo[client].GivingWeapon = false;
+	
+    Call_StartForward(g_hOnWeaponGiven);
+    Call_PushCell(client);
+    Call_PushCell(iWeapon);
+    Call_PushString(szClassName);
+    Call_PushCell(iWeaponDefIndex);
+    Call_PushCell(GetWeaponSlotByDefIndex(iWeaponDefIndex));
+    Call_PushCell(IsSkinnableDefIndex(iWeaponDefIndex));
+    Call_PushCell(bKnife);
+    Call_Finish();
+
+    return iWeapon;
+}
+
+public bool RemoveKnife(int client)
+{
+    if(!IsValidClient(client, true))
+    {
+        return false;
+    }
+
+    int iWeapon = -1;
+    int iDefIndex = -1;
+
+    for(int i = 0; i < GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons"); i++)
+    {
+        iWeapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+
+        if(!IsValidWeapon(iWeapon))
+        {
+            continue;
+        }
+
+        iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+        if(!IsDefIndexKnife(iDefIndex))
+        {
+            continue;
+        }
+
+        return RemoveWeapon(client, iWeapon);
+    }
+
+    return false;
+}
+
+public bool RemoveWeapon(int client, int iWeapon)
+{
+    if(IsValidClient(client, true))
+    {
+        return false;
+    }
+
+    if(g_bIsRoundEnd)
+    {
+        return false;
+    }
+
+    int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    int iWeaponSlot = GetWeaponSlotByDefIndex(iDefIndex);
+
+    if(iWeaponSlot < CS_SLOT_PRIMARY)
+    {
+        return false;
+    }
+
+    if(GetPlayerWeaponSlot(client, iWeaponSlot) != iWeapon)
+    {
+        return false;
+    }
+
+    if(!RemovePlayerItem(client, iWeapon))
+    {
+        if(!DropWeapon(client, iWeapon))
+        {
+            return false;
+        }
+    }
+
+    AcceptEntityInput(iWeapon, "Kill");
+    return true;
+}
+
+public bool DropWeapon(int client, int iWeapon)
+{
+    if(!IsValidClient(client, true))
+    {
+        return false;
+    }
+
+    if(g_bIsRoundEnd)
+    {
+        return false;
+    }
+
+    int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    int iWeaponSlot = GetWeaponSlotByDefIndex(iDefIndex);
+
+    if(iWeaponSlot < CS_SLOT_PRIMARY)
+    {
+        return false;
+    }
+
+    if(GetPlayerWeaponSlot(client, iWeaponSlot) != iWeapon)
+    {
+        return false;
+    }
+
+    int iHudFlags = GetEntProp(client, Prop_Send, "m_iHideHUD");
+    int iOwnerEntity = GetEntPropEnt(iWeapon, Prop_Send, "m_hOwnerEntity");
+
+    if(iOwnerEntity != client)
+    {
+        SetEntPropEnt(iWeapon, Prop_Send, "m_hOwnerEntity", client);
+    }
+
+    if(iWeapon == GetActiveWeapon(client))
+    {
+        SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", -1);
+    }
+
+    CS_DropWeapon(client, iWeapon, false, true);
+
+    if(iOwnerEntity != client)
+    {
+        SetEntPropEnt(iWeapon, Prop_Send, "m_hOwnerEntity", iOwnerEntity);
+    }
+
+    SetEntProp(client, Prop_Send, "m_iHideHUD", iHudFlags);
+
+    return true;
+}
+
+public bool SetActiveWeapon(int client, int iWeapon)
+{
+    if(!IsValidClient(client, true))
+    {
+        return false;
+    }
+
+    int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    int iWeaponSlot = GetWeaponSlotByDefIndex(iDefIndex);
+
+    if(iWeaponSlot <CS_SLOT_PRIMARY)
+    {
+        return false;
+    }
+
+    if(GetPlayerWeaponSlot(client, iWeaponSlot) != iWeapon)
+    {
+        return false;
+    }
+
+    int iHudFlags = GetEntProp(client, Prop_Send, "m_iHideHUD");
+
+    char szClassName[48];
+    GetWeaponClassNameByWeapon(iWeapon, szClassName, sizeof(szClassName));
+    FakeClientCommandEx(client, "use %s", szClassName);
+
+    SDKCall(g_hSwitchWeaponCall, client, iWeapon, 0);
+    SetEntPropEnt(client, Prop_Send, "m_hActiveWeapon", iWeapon);
+    SetEntProp(client, Prop_Send, "m_iHideHUD", iHudFlags);
+
+    return true;
+}
+
+public int RespawnWeapon(int client, int iWeapon)
+{
+    if(!IsValidClient(client, true))
+    {
+        return -1;
+    }
+
+    int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+
+    int iWeaponSlot = GetWeaponSlotByDefIndex(iDefIndex);
+
+    if (iWeaponSlot < CS_SLOT_PRIMARY)
+    {
+        return -1;
+    }
+
+    if(iWeapon != GetPlayerWeaponSlot(client, iWeaponSlot))
+    {
+        return -1;
+    }
+
+    char szClassName[48];
+
+    if(!GetWeaponClassNameByDefIndex(iDefIndex, szClassName, sizeof(szClassName)))
+    {
+        return -1;
+    }
+
+    int iReserveAmmo = -1;
+    int iClipAmmo = -1;
+
+    if(HasEntProp(iWeapon, Prop_Send, "m_iPrimaryReserveAmmoCount"))
+    {
+        iReserveAmmo = GetEntProp(iWeapon, Prop_Send, "m_iPrimaryReserveAmmoCount");
+    }
+
+    if(HasEntProp(iWeapon, Prop_Send, "m_iClip1"))
+    {
+        iClipAmmo = GetEntProp(iWeapon, Prop_Send, "m_iClip1");
+    }
+
+    return GiveWeapon(client, szClassName, iReserveAmmo, iClipAmmo, GetActiveWeaponSlot(client));
+}
+
+public int GetActiveWeaponSlot(int client)
+{
+    if(!IsValidClient(client, true))
+    {
+        return -1;
+    }
+
+    for(int iSlot = CS_SLOT_PRIMARY; iSlot <= CS_SLOT_C4; iSlot++)
+    {
+        if(GetPlayerWeaponSlot(client, iSlot) == GetActiveWeapon(client))
+        {
+            return iSlot;
+        }
+    }   
+    return -1;
+}
+
+public int RemoveAllWeapons(int client, int iSkipSlot)
+{
+    if(g_bIsRoundEnd)
+    {
+        return -1;
+    }
+
+    if(!IsValidClient(client, true))
+    {
+        return -1;
+    }
+
+    int iRemovedWeapons = 0;
+    int iWeaponSlot = -1;
+    int iWeapon = -1;
+
+    int iMyWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+    for(int i = 0; i < iMyWeapons; i++)
+    {
+        iWeapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+
+        if(!IsValidWeapon(iWeapon))
+        {
+            continue;
+        }
+
+        iWeaponSlot = GetWeaponSlotByWeapon(iWeapon);
+
+        if (iWeaponSlot < CS_SLOT_PRIMARY)
+        {
+            continue;
+        }
+
+        if(iWeaponSlot == iSkipSlot && iSkipSlot > -1)
+        {
+            continue;
+        }
+
+        if(RemoveWeapon(client, iWeapon))
+        {
+            iRemovedWeapons++;
+        }
+    }
+
+    return iRemovedWeapons;
+}
+
+public bool SetAllWeaponsAmmo(const int iReserveAmmo, const int iClipAmmo)
+{
+    for(int iWeapon = MaxClients; iWeapon < 2048; iWeapon++)
+    {
+        if(!IsValidWeapon(iWeapon))
+        {
+            continue;
+        }
+
+        int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+        if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+        {
+            continue;
+        }
+
+        if(IsDefIndexKnife(iDefIndex))
+        {
+            continue;
+        }
+
+        if(!SetWeaponAmmo(iWeapon, iReserveAmmo, iClipAmmo))
+        {
+            continue;
+        }
+    }
+    return true;
+}
+
+
+public bool SetAllWeaponsAmmoByClassName(const char[] szClassName, const int iReserveAmmo, const int iClipAmmo)
+{
+    char szWeaponClassName[48];
+    for(int iWeapon = MaxClients; iWeapon < 2048; iWeapon++)
+    {
+        if(!IsValidWeapon(iWeapon))
+        {
+            continue;
+        }
+
+        int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+        if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+        {
+            continue;
+        }
+
+        if(IsDefIndexKnife(iDefIndex))
+        {
+            continue;
+        }
+
+        if(!GetWeaponClassNameByDefIndex(iDefIndex, szWeaponClassName, sizeof(szWeaponClassName)))
+        {
+            continue;
+        }
+
+        if(strcmp(szWeaponClassName, szClassName) != 0)
+        {
+            continue;
+        }
+
+        if(!SetWeaponAmmo(iWeapon, iReserveAmmo, iClipAmmo))
+        {
+            continue;
+        }
+    }
+    return true;
 }

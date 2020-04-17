@@ -2,7 +2,13 @@ public void CreateNatives()
 {
     CreateNative("eItems_GetWeaponCount", Native_GetWeaponCount);
     CreateNative("eItems_GetPaintsCount", Native_GetPaintsCount);
+
+
     CreateNative("eItems_AreItemsSynced", Native_AreItemsSynced);
+    CreateNative("eItems_AreItemsSyncing", Native_AreItemsSyncing);
+    CreateNative("eItems_ReSync", Native_ReSync);
+    
+    
 
     /*              Weapons             */
 
@@ -25,8 +31,20 @@ public void CreateNatives()
     CreateNative("eItems_RefillClipAmmo", Native_RefillClipAmmo);
     CreateNative("eItems_RefillReserveAmmo", Native_RefillReserveAmmo);
     CreateNative("eItems_IsValidWeapon", Native_IsValidWeapon);
-    
+    CreateNative("eItems_GiveWeapon", Native_GiveWeapon);
+    CreateNative("eItems_RemoveKnife", Native_RemoveKnife);
+    CreateNative("eItems_RemoveWeapon", Native_RemoveWeapon);
+    CreateNative("eItems_RespawnWeapon", Native_RespawnWeapon);
+    CreateNative("eItems_RespawnWeaponBySlot", Native_RespawnWeaponBySlot);
+    CreateNative("eItems_RemoveAllWeapons", Native_RemoveAllWeapons);
+    CreateNative("eItems_SetWeaponAmmo", Native_SetWeaponAmmo);
+    CreateNative("eItems_SetAllWeaponsAmmo", Native_SetAllWeaponsAmmo);
+    CreateNative("eItems_SetAllWeaponsAmmoByClassName", Native_SetAllWeaponsAmmoByClassName);
+    CreateNative("eItems_SetActiveWeapon", Native_SetActiveWeapon);
+    CreateNative("eItems_DropWeapon", Native_DropWeapon);
 
+
+    
     //ClassNames
     CreateNative("eItems_GetWeaponClassNameByWeaponNum", Native_GetWeaponClassNameByWeaponNum);
     CreateNative("eItems_GetWeaponClassNameByDefIndex", Native_GetWeaponClassNameByDefIndex);
@@ -100,17 +118,29 @@ public void CreateNatives()
 
 public int Native_GetWeaponCount(Handle plugin, int numParams)
 {
-    return eGetWeaponCount();
+    return GetWeaponCount();
 }
 
 public int Native_GetPaintsCount(Handle plugin, int numParams)
 {
-    return eGetPaintsCount();
+    return GetPaintsCount();
 }
 
 public int Native_AreItemsSynced(Handle plugin, int numParams)
 {
-    return eAreItemsSynced();
+    return AreItemsSynced();
+}
+
+public int Native_AreItemsSyncing(Handle plugin, int numParams)
+{
+    return AreItemsSyncing();
+}
+
+public int Native_ReSync(Handle hPlugin, int iNumParams)
+{
+    CheckHibernation();
+    ParseItems();
+    return true;
 }
 
     // ClassNames
@@ -399,7 +429,7 @@ public int Native_GetWeaponDefIndexByWeapon(Handle hPlugin, int iNumParams)
 public int Native_GetWeaponNumByDefIndex(Handle plugin, int numParams)
 {
     int iDefIndex = GetNativeCell(1);
-    return eGetWeaponNumByDefIndex(iDefIndex);
+    return GetWeaponNumByDefIndex(iDefIndex);
 }
 
 public int Native_GetWeaponNumByClassName(Handle plugin, int numParams)
@@ -971,3 +1001,99 @@ public int Native_IsValidWeapon(Handle hPlugin, int iNumParams)
     return IsValidWeapon(iWeapon);
 }
 
+public int Native_GiveWeapon(Handle hPlugin, int iNumParams)
+{
+    int client = GetNativeCell(1);
+    char szClassName[48];
+
+    GetNativeString(2, szClassName, sizeof(szClassName));
+
+    int iReserveAmmo = GetNativeCell(3);
+    int iClipAmmo = GetNativeCell(4);
+    int iSwitchTo = GetNativeCell(5);
+
+    return GiveWeapon(client, szClassName, iReserveAmmo, iClipAmmo, iSwitchTo);
+}
+
+public int Native_RemoveKnife(Handle hPlugin, int iNumParams)
+{
+	int client = GetNativeCell(1);
+	
+	return RemoveKnife(client);
+}
+
+public int Native_RemoveWeapon(Handle hPlugin, int iNumParams)
+{
+    int client = GetNativeCell(1);
+    int iWeapon = GetNativeCell(2);
+
+    return RemoveWeapon(client, iWeapon);
+}
+
+public int Native_RespawnWeapon(Handle hPlugin, int iNumParams)
+{
+	int client = GetNativeCell(1);
+	int iWeapon = GetNativeCell(2);
+	
+	return RespawnWeapon(client, iWeapon);
+}
+
+public int Native_RespawnWeaponBySlot(Handle hPlugin, int iNumParams)
+{
+    int client = GetNativeCell(1);
+    int iSlot = GetNativeCell(2);
+    int iWeapon = GetPlayerWeaponSlot(client, iSlot);
+    return RespawnWeapon(client, iWeapon);
+}
+
+public int Native_RemoveAllWeapons(Handle hPlugin, int iNumParams)
+{
+    int client = GetNativeCell(1);
+    int iSkipSlot = GetNativeCell(2);
+
+    return RemoveAllWeapons(client, iSkipSlot);
+}
+
+
+public int Native_SetWeaponAmmo(Handle hPlugin, int iNumParams)
+{
+	int iWeapon = GetNativeCell(1);
+	int iReserveAmmo = GetNativeCell(2);
+	int iClipAmmo = GetNativeCell(3);
+	
+	return SetWeaponAmmo(iWeapon, iReserveAmmo, iClipAmmo);
+}
+
+public int Native_SetAllWeaponsAmmo(Handle hPlugin, int iNumParams)
+{
+	int iReserveAmmo = GetNativeCell(1);
+	int iClipAmmo = GetNativeCell(1);
+
+	return SetAllWeaponsAmmo(iReserveAmmo, iClipAmmo);
+}
+
+public int Native_SetAllWeaponsAmmoByClassName(Handle hPlugin, int iNumParams)
+{
+    char szClassName[48];
+    GetNativeString(1, szClassName, sizeof(szClassName));
+    int iReserveAmmo = GetNativeCell(2);
+    int iClipAmmo = GetNativeCell(2);
+
+    return SetAllWeaponsAmmoByClassName(szClassName, iReserveAmmo, iClipAmmo);
+}
+
+public int Native_SetActiveWeapon(Handle hPlugin, int iNumParams)
+{
+	int client = GetNativeCell(1);
+	int iWeapon = GetNativeCell(2);
+	
+	return SetActiveWeapon(client, iWeapon);
+}
+
+public int Native_DropWeapon(Handle hPlugin, int iNumParams)
+{
+	int client = GetNativeCell(1);
+	int iWeapon = GetNativeCell(2);
+	
+	return DropWeapon(client, iWeapon);
+}

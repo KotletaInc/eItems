@@ -8,49 +8,10 @@
 #pragma semicolon 1
 
 #define TAG_NCLR "[eItems]"
-#define AUTHOR "ESK0"
-#define VERSION "0.2"
+#define AUTHOR "ESK0 (Original author: SM9)"
+#define VERSION "0.3"
 
-
-ConVar g_cvHibernationWhenEmpty;
-int g_iHibernateWhenEmpty = 0;
-
-StringMap g_smSkinsNames = null;
-StringMap g_smWeaponPaints = null;
-StringMap g_smWeaponInfo = null;
-
-ArrayList g_arSkinsNum = null;
-ArrayList g_arWeaponsNum = null;
-
-enum struct eWeaponInfo
-{
-    int WeaponNum;
-    char DisplayName[48];
-    char ClassName[48];
-    char ViewModel[PLATFORM_MAX_PATH];
-    char WorldModel[PLATFORM_MAX_PATH];
-    ArrayList Paints;
-    int Team;
-    int Slot;
-    int ClipAmmo;
-    int ReserveAmmo;
-    int MaxPlayerSpeed;
-    int Price;
-    float CycleTime;
-    float Spread;
-    int Damage;
-    int FullAuto;
-}
-
-float g_fStart;
-
-int g_iWeaponCount = 0;
-int g_iPaintsCount = 0;
-
-bool g_bItemsSynced = false;
-
-GlobalForward g_OnItemsSynced;
-
+#include "files/globals.sp"
 #include "files/natives.sp"
 #include "files/forwards.sp"
 #include "files/func.sp"
@@ -65,9 +26,14 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+    //
     g_smSkinsNames      = new StringMap();
+
+    // Weapons
     g_smWeaponPaints    = new StringMap();
     g_smWeaponInfo      = new StringMap();
+
+    // Nums
     g_arSkinsNum        = new ArrayList();
     g_arWeaponsNum      = new ArrayList();
 
@@ -76,6 +42,23 @@ public void OnPluginStart()
 
     CheckHibernation();
     ParseItems();
+
+    HookEvent("player_death", Event_PlayerDeath);
+    HookEvent("round_poststart",    Event_OnRoundStart);
+    HookEvent("cs_pre_restart",     Event_OnRoundEnd);
+
+    AddNormalSoundHook(OnNormalSoundPlayed);
+
+    Handle hConfig = LoadGameConfigFile("sdkhooks.games");
+
+    StartPrepSDKCall(SDKCall_Player);
+    PrepSDKCall_SetFromConf(hConfig, SDKConf_Virtual, "Weapon_Switch");
+    PrepSDKCall_AddParameter(SDKType_CBaseEntity, SDKPass_Pointer);
+    PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
+
+    g_hSwitchWeaponCall = EndPrepSDKCall();
+
+    g_hOnWeaponGiven = CreateGlobalForward("eItems_OnWeaponGiven", ET_Ignore, Param_Cell, Param_Cell, Param_String, Param_Cell, Param_Cell, Param_Cell, Param_Cell);
 }
 
 public void OnPluginEnd()
@@ -96,10 +79,53 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
     return APLRes_Success;
 }
 
+public Action Event_OnRoundStart(Handle hEvent, char[] szName, bool bDontBroadcast)
+{
+    g_bIsRoundEnd = false;
+}
+public Action Event_OnRoundEnd(Handle hEvent, char[] szName, bool bDontBroadcast) 
+{
+    g_bIsRoundEnd = true;
+}
+
+public Action Event_PlayerDeath(Handle hEvent, const char[] szName, bool bDontBroadcast)
+{
+	int client = GetClientOfUserId(GetEventInt(hEvent, "userid"));
+	
+	ClientInfo[client].GivingWeapon = false;
+	
+	return Plugin_Continue;
+}
+
+public void OnClientPutInServer(int client)
+{
+    ClientInfo[client].Reset();
+}
+
 public void ParseItems()
 {
     HTTPClient httpClient = new HTTPClient("<-- URL HIDDEN TILL RELEASE --->");
     httpClient.Get("items.json", PraseItemsDownloaded);
+}
+
+public Action OnNormalSoundPlayed(int clients[64], int &iNumClients, char szSample[PLATFORM_MAX_PATH], int &iEntity, int &iChannel, float &iVolume, int &iLevel, int &iPitch, int &iFlags)
+{
+    if(StrContains(szSample, "itempickup.wav", false) > -1 || StrContains(szSample, "ClipEmpty_Rifle.wav", false) > -1 || StrContains(szSample, "buttons/", false) > -1)
+    {
+        for(int client = 0; client <= MaxClients; client++)
+        {
+            if(!IsValidClient(client))
+            {
+                continue;
+            }
+
+            if(ClientInfo[client].GivingWeapon == true)
+            {
+                return Plugin_Handled;
+            }
+        }
+    }
+    return Plugin_Continue;
 }
 
 public void PraseItemsDownloaded(HTTPResponse response, any value)
@@ -122,6 +148,7 @@ public void PraseItemsDownloaded(HTTPResponse response, any value)
 
 public void ParseData(any json)
 {
+    g_bItemsSyncing = true;
     g_fStart = GetEngineTime();
 
     JSONObject jRoot        = view_as<JSONObject>(json);
@@ -163,6 +190,7 @@ public void ParseData(any json)
     PrintToServer("%s Items synced in %0.5f seconds", TAG_NCLR, fEnd - g_fStart);
     PrintToServer("%s Items synced successfully", TAG_NCLR);
     g_bItemsSynced = true;
+    g_bItemsSyncing = false;
 
     Call_StartForward(g_OnItemsSynced);
     Call_Finish(g_OnItemsSynced);
@@ -204,7 +232,7 @@ public void ParseWeapons(JSONArray array)
         iMaxPlayerSpeed = -1;
         iPrice = -1;
         iDamage = -1;
-        iFullAuto = -1;
+        iFullAuto = 0;
 
         fCycleTime = 0.0;
         fSpread = 0.0;
