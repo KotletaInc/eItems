@@ -23,6 +23,139 @@ public bool AreItemsSyncing()
     return g_bItemsSyncing;
 }
 
+    // Generic
+public bool IsDefIndexKnife(int iDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    if(WeaponInfo.Slot == CS_SLOT_KNIFE)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+public int GetActiveWeapon(int client)
+{
+    if (!IsValidClient(client, true))
+    {
+        return -1;
+    }
+
+    return GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
+}
+
+public int GetActiveWeaponDefIndex(int client)
+{
+    int iWeapon = GetActiveWeapon(client);
+
+    if(!IsValidWeapon(iWeapon))
+    {
+        return -1;
+    }
+
+    return GetWeaponDefIndexByWeapon(iWeapon);
+}
+
+public int FindWeaponByWeaponNum(int client, int iWeaponNum)
+{
+    if(g_iWeaponCount < iWeaponNum)
+    {
+        return false;
+    }
+
+    char szClassName[48];
+
+    if (!GetWeaponClassNameByWeaponNum(iWeaponNum, szClassName, sizeof(szClassName)))
+    {
+        return -1;
+    }
+
+    return FindWeaponByClassName(client, szClassName);
+}
+
+public int FindWeaponByClassName(int client, const char[] szClassName)
+{
+    if(!IsValidClient(client, true))
+    {
+        return -1;
+    }
+
+
+    int iWantedDefIndex = GetWeaponDefIndexByClassName(szClassName);
+
+    if(g_arWeaponsNum.FindValue(iWantedDefIndex) == -1)
+    {
+        return -1;
+    }
+
+    int iMyWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
+
+    for (int i = 0; i < iMyWeapons; i++)
+    {
+        int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+
+        if(!IsValidWeapon(iWeapon))
+        {
+            continue;
+        }
+
+        int iWeaponDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+        if(iWeaponDefIndex == iWantedDefIndex)
+        {
+            return iWeapon;
+        }
+    }
+    return -1;
+}
+
+public bool IsSkinnableDefIndex(int iDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    ArrayList arWeaponPaints = null;
+    g_smWeaponPaints.GetValue(szDefIndex, arWeaponPaints);
+    if(arWeaponPaints == null)
+    {
+        return false;
+    }
+    return arWeaponPaints.Length > 0;
+}
+
+public int FindWeaponByDefIndex(int client, int iDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szClassName[48];
+
+    if (!GetWeaponClassNameByDefIndex(iDefIndex, szClassName, sizeof(szClassName)))
+    {
+        return -1;
+    }
+
+    return FindWeaponByClassName(client, szClassName);
+}
+
 public int GetWeaponNumByDefIndex(int iDefIndex)
 {
     return g_arWeaponsNum.FindValue(iDefIndex);
@@ -41,7 +174,6 @@ public int GetWeaponNumByClassName(const char[] szClassName)
         {
             return iWeaponNum;
         }
-
     }
     return -1;
 }
@@ -95,7 +227,6 @@ public int GetWeaponDefIndexByClassName(const char[] szClassName)
         {
             return GetWeaponDefIndexByWeaponNum(iWeaponNum);
         }
-
     }
     return -1;
 }
@@ -104,13 +235,13 @@ public bool IsValidWeapon(int iWeapon)
 {
     if(!IsValidEntity(iWeapon) || !IsValidEdict(iWeapon) || iWeapon < 0)
     {
-		return false;
-	}
+        return false;
+    }
 
     if(!HasEntProp(iWeapon, Prop_Send, "m_hOwnerEntity"))
     {
         return false;
-	}
+    }
 
     int iDefIndex = GetEntProp(iWeapon, Prop_Send, "m_iItemDefinitionIndex");
     if(g_arWeaponsNum.FindValue(iDefIndex) != -1)
@@ -195,7 +326,7 @@ public bool GetWeaponClassNameByWeapon(int iWeapon, char[] szClassName, int iLen
 
     eWeaponInfo WeaponInfo;
     g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
-    
+
     strcopy(szClassName, iLen, WeaponInfo.ClassName);
     return true;
 }
@@ -255,7 +386,7 @@ public bool GetWeaponDisplayNameByWeapon(int iWeapon, char[] szDisplayName, int 
 
     eWeaponInfo WeaponInfo;
     g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
-    
+
     strcopy(szDisplayName, iLen, WeaponInfo.DisplayName);
     return true;
 }
@@ -333,7 +464,7 @@ public bool GetWeaponViewModelByWeapon(int iWeapon, char[] szViewModel, int iLen
 
     eWeaponInfo WeaponInfo;
     g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
-    
+
     strcopy(szViewModel, iLen, WeaponInfo.ViewModel);
     return true;
 }
@@ -390,7 +521,7 @@ public bool GetWeaponWorldModelByDefIndex(int iDefIndex, char[] szWorldModel, in
 
     strcopy(szWorldModel, iLen, WeaponInfo.WorldModel);
     return true;
-}
+    }
 
 public bool GetWeaponWorldModelByWeapon(int iWeapon, char[] szWorldModel, int iLen)
 {
@@ -411,7 +542,7 @@ public bool GetWeaponWorldModelByWeapon(int iWeapon, char[] szWorldModel, int iL
 
     eWeaponInfo WeaponInfo;
     g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
-    
+
     strcopy(szWorldModel, iLen, WeaponInfo.WorldModel);
     return true;
 }
@@ -432,139 +563,6 @@ public bool GetWeaponWorldModelByClassName(const char[] szClassName, char[] szWo
         }
     }
     return false;
-}
-
-    // Generic
-public bool IsDefIndexKnife(int iDefIndex)
-{
-    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
-    {
-        return false;
-    }
-
-    char szDefIndex[12];
-    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
-
-    eWeaponInfo WeaponInfo;
-    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
-
-    if(WeaponInfo.Slot == CS_SLOT_KNIFE)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-public int GetActiveWeapon(int client)
-{
-	if (!IsValidClient(client, true))
-    {
-		return -1;
-	}
-		
-	return GetEntPropEnt(client, Prop_Send, "m_hActiveWeapon");
-}
-
-public int GetActiveWeaponDefIndex(int client)
-{
-	int iWeapon = GetActiveWeapon(client);
-	
-	if(!IsValidWeapon(iWeapon))
-    {
-        return -1;
-    }
-
-	return GetWeaponDefIndexByWeapon(iWeapon);
-}
-
-public bool IsSkinnableDefIndex(int iDefIndex)
-{
-    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
-    {
-        return false;
-    }
-
-    char szDefIndex[12];
-    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
-
-    ArrayList arWeaponPaints = null;
-    g_smWeaponPaints.GetValue(szDefIndex, arWeaponPaints);
-    if(arWeaponPaints == null)
-    {
-        return false;
-    }
-    return arWeaponPaints.Length > 0;
-}
-
-public int FindWeaponByWeaponNum(int client, int iWeaponNum)
-{
-	if(g_iWeaponCount < iWeaponNum)
-    {
-        return false;
-    }
-	
-	char szClassName[48];
-
-	if (!GetWeaponClassNameByWeaponNum(iWeaponNum, szClassName, sizeof(szClassName)))
-    {
-		return -1;
-	}
-	
-	return FindWeaponByClassName(client, szClassName);
-}
-
-public int FindWeaponByClassName(int client, const char[] szClassName)
-{
-    if(!IsValidClient(client, true))
-    {
-        return -1;
-    }
-
-
-    int iWantedDefIndex = GetWeaponDefIndexByClassName(szClassName);
-
-    if(g_arWeaponsNum.FindValue(iWantedDefIndex) == -1)
-    {
-        return -1;
-    }
-
-    int iMyWeapons = GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons");
-
-    for (int i = 0; i < iMyWeapons; i++)
-    {
-        int iWeapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
-
-        if(!IsValidWeapon(iWeapon))
-        {
-            continue;
-        }
-
-        int iWeaponDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
-
-        if(iWeaponDefIndex == iWantedDefIndex)
-        {
-            return iWeapon;
-        }
-    }
-    return -1;
-}
-
-public int FindWeaponByDefIndex(int client, int iDefIndex)
-{
-    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
-    {
-        return false;
-    }
-
-    char szClassName[48];
-
-    if (!GetWeaponClassNameByDefIndex(iDefIndex, szClassName, sizeof(szClassName)))
-    {
-        return -1;
-    }
-
-    return FindWeaponByClassName(client, szClassName);
 }
 
     //  Weapon Slot
@@ -1675,7 +1673,7 @@ public int GiveWeapon(int client, const char[] szClassName, int iReserveAmmo, in
 	
     ClientInfo[client].GivingWeapon = false;
 	
-    Call_StartForward(g_hOnWeaponGiven);
+    Call_StartForward(g_OnWeaponGiven);
     Call_PushCell(client);
     Call_PushCell(iWeapon);
     Call_PushString(szClassName);
@@ -1700,21 +1698,21 @@ public bool RemoveKnife(int client)
 
     for(int i = 0; i < GetEntPropArraySize(client, Prop_Send, "m_hMyWeapons"); i++)
     {
-        iWeapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
+    iWeapon = GetEntPropEnt(client, Prop_Send, "m_hMyWeapons", i);
 
-        if(!IsValidWeapon(iWeapon))
-        {
-            continue;
-        }
+    if(!IsValidWeapon(iWeapon))
+    {
+        continue;
+    }
 
-        iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+    iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
 
-        if(!IsDefIndexKnife(iDefIndex))
-        {
-            continue;
-        }
+    if(!IsDefIndexKnife(iDefIndex))
+    {
+        continue;
+    }
 
-        return RemoveWeapon(client, iWeapon);
+    return RemoveWeapon(client, iWeapon);
     }
 
     return false;
@@ -2036,6 +2034,7 @@ public bool SetAllWeaponsAmmoByClassName(const char[] szClassName, const int iRe
     }
     return true;
 }
+    /*      Skins       */
 
 public bool IsSkinNumGloveApplicable(int iSkinNum)
 {
@@ -2074,10 +2073,10 @@ public bool GetSkinDisplayNameByDefIndex(int iDefIndex, char[] szDisplayName, in
 {
     char szDefIndex[12];
     IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
-        
+
     eSkinInfo SkinInfo;
     g_smSkinInfo.GetArray(szDefIndex, SkinInfo, sizeof(eSkinInfo));
-    
+
     strcopy(szDisplayName, iLen, SkinInfo.DisplayName);
     return true;
 }
@@ -2088,10 +2087,10 @@ public bool GetSkinDisplayNameBySkinNum(int iSkinNum, char[] szDisplayName, int 
 
     char szDefIndex[12];
     IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
-        
+
     eSkinInfo SkinInfo;
     g_smSkinInfo.GetArray(szDefIndex, SkinInfo, sizeof(SkinInfo));
-    
+
     strcopy(szDisplayName, iLen, SkinInfo.DisplayName);
     return true;
 }
@@ -2131,6 +2130,7 @@ public bool IsNativeSkin(int iSkinNum, int iItemNum, int iItemType)
     }
     return false;
 }
+    /*      Gloves      */
 
 public int GetGlovesNumByDefIndex(int iDefIndex)
 {
@@ -2143,41 +2143,96 @@ public int GetGlovesNumByDefIndex(int iDefIndex)
     return iIndex;
 }
 
-public int GetGlovesDefIndexByGlovesNum(int iSkinNum)
+public int GetGlovesDefIndexByGlovesNum(int iGloveNum)
 {
-    if(g_arGlovesNum.Length < iSkinNum)
+    if(g_arGlovesNum.Length < iGloveNum)
     {
         return -1;
     }
 
-    return g_arGlovesNum.Get(iSkinNum);
+    return g_arGlovesNum.Get(iGloveNum);
 }
 
 public bool GetGlovesDisplayNameByDefIndex(int iDefIndex, char[] szDisplayName, int iLen)
 {
     char szDefIndex[12];
     IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
-        
+
     eGlovesInfo GloveInfo;
     g_smGloveInfo.GetArray(szDefIndex, GloveInfo, sizeof(eGlovesInfo));
-    
+
     strcopy(szDisplayName, iLen, GloveInfo.DisplayName);
     return true;
 }
 
-public bool GetGlovesDisplayNameByGlovesNum(int iSkinNum, char[] szDisplayName, int iLen)
+public bool GetGlovesDisplayNameByGlovesNum(int iGloveNum, char[] szDisplayName, int iLen)
 {
-    int iDefIndex = GetGlovesDefIndexByGlovesNum(iSkinNum);
+    int iDefIndex = GetGlovesDefIndexByGlovesNum(iGloveNum);
 
     char szDefIndex[12];
     IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
-        
+
     eGlovesInfo GloveInfo;
     g_smGloveInfo.GetArray(szDefIndex, GloveInfo, sizeof(eGlovesInfo));
-    
+
     strcopy(szDisplayName, iLen, GloveInfo.DisplayName);
     return true;
 }
+
+public bool GetGlovesViewModelByGlovesNum(int iGloveNum, char[] szWorldModel, int iLen)
+{
+    if(g_iGlovesCount < iGloveNum)
+    {
+        return false;
+    }
+
+    int iDefIndex = GetGlovesDefIndexByGlovesNum(iGloveNum);
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eGlovesInfo GlovesInfo;
+    g_smGloveInfo.GetArray(szDefIndex, GlovesInfo, sizeof(eGlovesInfo));
+
+    strcopy(szWorldModel, iLen, GlovesInfo.ViewModel);
+    return true;
+}
+
+public bool GetGlovesViewModelByDefIndex(int iDefIndex, char[] szWorldModel, int iLen)
+{
+    if(g_arGlovesNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eGlovesInfo GlovesInfo;
+    g_smGloveInfo.GetArray(szDefIndex, GlovesInfo, sizeof(eGlovesInfo));
+
+    strcopy(szWorldModel, iLen, GlovesInfo.ViewModel);
+    return true;
+}
+
+public bool GetGlovesWorldModelByGlovesNum(int iGloveNum, char[] szWorldModel, int iLen)
+{
+    if(g_iGlovesCount < iGloveNum)
+    {
+        return false;
+    }
+
+    int iDefIndex = GetGlovesDefIndexByGlovesNum(iGloveNum);
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eGlovesInfo GlovesInfo;
+    g_smGloveInfo.GetArray(szDefIndex, GlovesInfo, sizeof(eGlovesInfo));
+
+    strcopy(szWorldModel, iLen, GlovesInfo.WorldModel);
+    return true;
+}
+
 public bool GetGlovesWorldModelByDefIndex(int iDefIndex, char[] szWorldModel, int iLen)
 {
     if(g_arGlovesNum.FindValue(iDefIndex) == -1)
@@ -2192,6 +2247,39 @@ public bool GetGlovesWorldModelByDefIndex(int iDefIndex, char[] szWorldModel, in
 
     strcopy(szWorldModel, iLen, GlovesInfo.WorldModel);
     return true;
+}
+
+public int GetGlovesNumBySkinNum(int iSkinNum)
+{
+    if(g_iPaintsCount < iSkinNum)
+    {
+        return -1;
+    }
+
+    int iSkinDefIndex = GetSkinDefIndexBySkinNum(iSkinNum);
+
+    char szDefIndex[12];
+    for(int iGloveNum = 0; iGloveNum < g_arGlovesNum.Length; iGloveNum++)
+    {
+        int iDefIndex = g_arGlovesNum.Get(iGloveNum);
+
+        IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+        ArrayList arGlovePaints = null;
+        g_smGlovePaints.GetValue(szDefIndex, arGlovePaints);
+
+        if(arGlovePaints == null)
+        {
+            continue;
+        }
+
+        if(arGlovePaints.FindValue(iSkinDefIndex) == -1)
+        {
+            continue;
+        }
+
+        return iGloveNum;
+    }
+    return -1;
 }
 
 

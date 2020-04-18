@@ -44,9 +44,6 @@ public void CreateNatives()
     CreateNative("eItems_SetAllWeaponsAmmoByClassName", Native_SetAllWeaponsAmmoByClassName);
     CreateNative("eItems_SetActiveWeapon", Native_SetActiveWeapon);
     CreateNative("eItems_DropWeapon", Native_DropWeapon);
-
-
-    
     //ClassNames
     CreateNative("eItems_GetWeaponClassNameByWeaponNum", Native_GetWeaponClassNameByWeaponNum);
     CreateNative("eItems_GetWeaponClassNameByDefIndex", Native_GetWeaponClassNameByDefIndex);
@@ -132,8 +129,13 @@ public void CreateNatives()
     CreateNative("eItems_GetGlovesDefIndexByGlovesNum", Native_GetGlovesDefIndexByGlovesNum);
     CreateNative("eItems_GetGlovesDisplayNameByDefIndex", Native_GetGlovesDisplayNameByDefIndex);
     CreateNative("eItems_GetGlovesDisplayNameByGlovesNum", Native_GetGlovesDisplayNameByGlovesNum);
-
+    CreateNative("eItems_GetGlovesViewModelByGlovesNum", Native_GetGlovesViewModelByGlovesNum);
+    CreateNative("eItems_GetGlovesViewModelByDefIndex", Native_GetGlovesViewModelByDefIndex);
+    CreateNative("eItems_GetGlovesWorldModelByGlovesNum", Native_GetGlovesWorldModelByGlovesNum);
     CreateNative("eItems_GetGlovesWorldModelByDefIndex", Native_GetGlovesWorldModelByDefIndex);
+    CreateNative("eItems_GetGlovesNumBySkinNum", Native_GetGlovesNumBySkinNum);
+    
+    
 
 }
 
@@ -1198,16 +1200,16 @@ public int Native_GetSkinDisplayNameBySkinNum(Handle hPlugin, int iNumParams)
 
 public int Native_IsNativeSkin(Handle hPlugin, int iNumParams)
 {
-	int iSkinNum = GetNativeCell(1);
-	int iItemNum = GetNativeCell(2);
-	int iItemType = GetNativeCell(3);
-	
-	if(iItemType < 0 || iItemType > 1)
+    int iSkinNum = GetNativeCell(1);
+    int iItemNum = GetNativeCell(2);
+    int iItemType = GetNativeCell(3);
+
+    if(iItemType < 0 || iItemType > 1)
     {
-		return false;
-	}
+        return false;
+    }
     
-	return IsNativeSkin(iSkinNum, iItemNum, iItemType);
+    return IsNativeSkin(iSkinNum, iItemNum, iItemType);
 }
 
 public int Native_GetGlovesNumByDefIndex(Handle hPlugin, int iNumParams)
@@ -1270,6 +1272,60 @@ public int Native_GetGlovesDisplayNameByGlovesNum(Handle hPlugin, int iNumParams
     return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
 }
 
+public int Native_GetGlovesViewModelByGlovesNum(Handle plugin, int numParams)
+{
+    int iGloveNum = GetNativeCell(1);
+
+    if(g_iGlovesCount < iGloveNum)
+    {
+        return -1;
+    }
+    char szWorldModel[PLATFORM_MAX_PATH];
+
+    if(!GetGlovesViewModelByGlovesNum(iGloveNum, szWorldModel, sizeof(szWorldModel)))
+    {
+        return false;
+    }
+
+    return SetNativeString(2, szWorldModel, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetGlovesViewModelByDefIndex(Handle plugin, int numParams)
+{
+    int iDefIndex = GetNativeCell(1);
+    if(g_arGlovesNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szWorldModel[PLATFORM_MAX_PATH];
+
+    if(!GetGlovesViewModelByDefIndex(iDefIndex, szWorldModel, sizeof(szWorldModel)))
+    {
+        return false;
+    }
+
+    return SetNativeString(2, szWorldModel, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetGlovesWorldModelByGlovesNum(Handle plugin, int numParams)
+{
+    int iGloveNum = GetNativeCell(1);
+
+    if(g_iGlovesCount < iGloveNum)
+    {
+        return -1;
+    }
+    char szWorldModel[PLATFORM_MAX_PATH];
+
+    if(!GetGlovesWorldModelByGlovesNum(iGloveNum, szWorldModel, sizeof(szWorldModel)))
+    {
+        return false;
+    }
+
+    return SetNativeString(2, szWorldModel, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
 public int Native_GetGlovesWorldModelByDefIndex(Handle plugin, int numParams)
 {
     int iDefIndex = GetNativeCell(1);
@@ -1287,4 +1343,17 @@ public int Native_GetGlovesWorldModelByDefIndex(Handle plugin, int numParams)
 
     return SetNativeString(2, szWorldModel, GetNativeCell(3)) == SP_ERROR_NONE;
 }
+
+public int Native_GetGlovesNumBySkinNum(Handle plugin, int numParams)
+{
+    int iSkinNum = GetNativeCell(1);
+
+    if(g_iPaintsCount < iSkinNum)
+    {
+        return -1;
+    }
+
+    return GetGlovesNumBySkinNum(iSkinNum);
+}
+
 

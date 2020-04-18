@@ -233,6 +233,9 @@ native int      eItems_GetGlovesDefIndexByGlovesNum(int iGlovesNum);
 native bool     eItems_GetGlovesDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
 native bool     eItems_GetGlovesDisplayNameByGlovesNum(int iGlovesNum, char[] szBuffer, int iLength);
 
-
+native bool     eItems_GetGlovesViewModelByGlovesNum(int iGlovesNum, char[] szBuffer, int iLength);
+native bool     eItems_GetGlovesViewModelByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetGlovesWorldModelByGlovesNum(int iGlovesNum, char[] szBuffer, int iLength);
 native bool     eItems_GetGlovesWorldModelByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+native int      eItems_GetGlovesNumBySkinNum(int iSkinNum);
 

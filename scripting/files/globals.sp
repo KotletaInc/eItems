@@ -1,22 +1,6 @@
 ConVar g_cvHibernationWhenEmpty;
 int g_iHibernateWhenEmpty = 0;
 
-
-
-StringMap g_smSkinInfo = null;
-ArrayList g_arSkinsNum = null;
-
-
-StringMap g_smWeaponPaints = null;
-StringMap g_smWeaponInfo = null;
-ArrayList g_arWeaponsNum = null;
-
-
-StringMap g_smGlovePaints = null;
-StringMap g_smGloveInfo = null;
-ArrayList g_arGlovesNum = null;
-
-
 enum struct eSkinInfo
 {
     int SkinNum;
@@ -65,6 +49,17 @@ enum struct eClientInfo
 
 eClientInfo ClientInfo[MAXPLAYERS + 1];
 
+StringMap g_smSkinInfo = null;
+ArrayList g_arSkinsNum = null;
+
+StringMap g_smWeaponPaints = null;
+StringMap g_smWeaponInfo = null;
+ArrayList g_arWeaponsNum = null;
+
+StringMap g_smGlovePaints = null;
+StringMap g_smGloveInfo = null;
+ArrayList g_arGlovesNum = null;
+
 float g_fStart;
 
 int g_iWeaponCount = 0;
@@ -76,7 +71,6 @@ bool g_bItemsSyncing = false;
 bool g_bIsRoundEnd = false;
 
 Handle g_hSwitchWeaponCall = null;
-Handle g_hOnWeaponGiven = null;
 
-
+GlobalForward g_OnWeaponGiven;
 GlobalForward g_OnItemsSynced;
