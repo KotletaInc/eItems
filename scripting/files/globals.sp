@@ -74,3 +74,5 @@ Handle g_hSwitchWeaponCall = null;
 
 GlobalForward g_OnWeaponGiven;
 GlobalForward g_OnItemsSynced;
+
+char g_szLocalFilePath[PLATFORM_MAX_PATH];

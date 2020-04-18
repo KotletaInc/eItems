@@ -1,6 +1,8 @@
 public void ParseItems()
 {
-    HTTPClient httpClient = new HTTPClient("<-- URL HIDDEN TILL RELEASE --->");
+    PrintToServer("%s Downloading eItems data from API", TAG_NCLR);
+    HTTPClient httpClient = new HTTPClient("https://api.hexa-core.eu/plugins/eitems");
+    httpClient.SetHeader("User-Agent", "eItems HTTP Client 1.0 (730)");
     httpClient.Get("items.json", PraseItemsDownloaded);
 }
 
@@ -8,24 +10,60 @@ public void PraseItemsDownloaded(HTTPResponse response, any value)
 {
     if (response.Status != HTTPStatus_OK)
     {
-        SetFailState("%s HTTPStatus_OK failed", TAG_NCLR);
+        PrintToServer("%s Downloading eItems data from API failed! Local backup will be used instead!", TAG_NCLR);
+        LoadBackup();
         return;
     }
     if (response.Data == null)
     {
-        SetFailState("%s Data failed", TAG_NCLR);
+        PrintToServer("%s Downloading eItems data from API failed! Local backup will be used instead!", TAG_NCLR);
+        LoadBackup();
+        return;
+    }
+    PrintToServer("%s eItems data downloaded successfully", TAG_NCLR);
+    BackupJson(response.Data);
+}
+
+public void LoadBackup()
+{
+    if(!FileExists(g_szLocalFilePath))
+    {
+        SetFailState("%s Local backup not found! Turning plugin off.", TAG_NCLR);
         return;
     }
 
-    ParseData(response.Data);
+    JSONObject jRoot = JSONObject.FromFile(g_szLocalFilePath);
+    ParseData(jRoot);
 }
 
-public void ParseData(any json)
+public void BackupJson(JSON json)
+{
+    PrintToServer("%s Creating local backup file!", TAG_NCLR);
+    File fLocalFile = null;
+    if (fLocalFile == null)
+    {
+        if(FileExists(g_szLocalFilePath))
+        {
+            DeleteFile(g_szLocalFilePath);
+        }
+        fLocalFile = OpenFile(g_szLocalFilePath, "w+");
+    }
+
+    JSONObject jRoot = view_as<JSONObject>(json);
+
+    jRoot.ToFile(g_szLocalFilePath, JSON_COMPACT);
+    delete fLocalFile;
+    fLocalFile = null;
+    PrintToServer("%s Backup created!", TAG_NCLR);
+
+    ParseData(jRoot);
+}
+
+public void ParseData(JSONObject jRoot)
 {
     g_bItemsSyncing = true;
     g_fStart = GetEngineTime();
 
-    JSONObject jRoot        = view_as<JSONObject>(json);
     JSONArray jWeapons      = view_as<JSONArray>(jRoot.Get("weapons"));
     JSONArray jPaints       = view_as<JSONArray>(jRoot.Get("paints"));
     JSONArray jGloves       = view_as<JSONArray>(jRoot.Get("gloves"));
@@ -36,7 +74,6 @@ public void ParseData(any json)
     JSONArray jPatches      = view_as<JSONArray>(jRoot.Get("patches"));
     JSONArray jSprayes      = view_as<JSONArray>(jRoot.Get("sprayes"));
     JSONArray jStickers     = view_as<JSONArray>(jRoot.Get("stickers"));
-
     
 
     /*              Paints parse                */
