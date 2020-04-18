@@ -2,6 +2,8 @@ public void CreateNatives()
 {
     CreateNative("eItems_GetWeaponCount", Native_GetWeaponCount);
     CreateNative("eItems_GetPaintsCount", Native_GetPaintsCount);
+    CreateNative("eItems_GetGlovesCount", Native_GetGlovesCount);
+    
 
 
     CreateNative("eItems_AreItemsSynced", Native_AreItemsSynced);
@@ -114,6 +116,25 @@ public void CreateNatives()
     CreateNative("eItems_GetWeaponCycleTimeByDefIndex", Native_GetWeaponCycleTimeByDefIndex);
     CreateNative("eItems_GetWeaponCycleTimeByWeapon", Native_GetWeaponCycleTimeByWeapon);
     CreateNative("eItems_GetWeaponCycleTimeByClassName", Native_GetWeaponCycleTimeByClassName);
+
+    /*              Skins             */
+
+    CreateNative("eItems_IsSkinNumGloveApplicable", Native_IsSkinNumGloveApplicable);
+    CreateNative("eItems_GetSkinNumByDefIndex", Native_GetSkinNumByDefIndex);
+    CreateNative("eItems_GetSkinDefIndexBySkinNum", Native_GetSkinDefIndexBySkinNum);
+    CreateNative("eItems_GetSkinDisplayNameByDefIndex", Native_GetSkinDisplayNameByDefIndex);
+    CreateNative("eItems_GetSkinDisplayNameBySkinNum", Native_GetSkinDisplayNameBySkinNum);
+    CreateNative("eItems_IsNativeSkin", Native_IsNativeSkin);
+
+    /*              Gloves            */
+
+    CreateNative("eItems_GetGlovesNumByDefIndex", Native_GetGlovesNumByDefIndex);
+    CreateNative("eItems_GetGlovesDefIndexByGlovesNum", Native_GetGlovesDefIndexByGlovesNum);
+    CreateNative("eItems_GetGlovesDisplayNameByDefIndex", Native_GetGlovesDisplayNameByDefIndex);
+    CreateNative("eItems_GetGlovesDisplayNameByGlovesNum", Native_GetGlovesDisplayNameByGlovesNum);
+
+    CreateNative("eItems_GetGlovesWorldModelByDefIndex", Native_GetGlovesWorldModelByDefIndex);
+
 }
 
 public int Native_GetWeaponCount(Handle plugin, int numParams)
@@ -124,6 +145,11 @@ public int Native_GetWeaponCount(Handle plugin, int numParams)
 public int Native_GetPaintsCount(Handle plugin, int numParams)
 {
     return GetPaintsCount();
+}
+
+public int Native_GetGlovesCount(Handle plugin, int numParams)
+{
+    return GetGlovesCount();
 }
 
 public int Native_AreItemsSynced(Handle plugin, int numParams)
@@ -1097,3 +1123,168 @@ public int Native_DropWeapon(Handle hPlugin, int iNumParams)
 	
 	return DropWeapon(client, iWeapon);
 }
+
+public int Native_IsSkinNumGloveApplicable(Handle hPlugin, int iNumParams)
+{
+    int iSkinNum = GetNativeCell(1);
+
+    if(g_iPaintsCount < iSkinNum)
+    {
+        return false;
+    }
+
+    return IsSkinNumGloveApplicable(iSkinNum);
+}
+
+public int Native_GetSkinNumByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arSkinsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+    return GetSkinNumByDefIndex(iDefIndex);
+}
+
+public int Native_GetSkinDefIndexBySkinNum(Handle hPlugin, int iNumParams)
+{
+    int iSkinNum = GetNativeCell(1);
+
+    if(g_iPaintsCount < iSkinNum)
+    {
+        return -1;
+    }
+    return GetSkinDefIndexBySkinNum(iSkinNum);
+}
+
+public int Native_GetSkinDisplayNameByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arSkinsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetSkinDisplayNameByDefIndex(iDefIndex, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetSkinDisplayNameBySkinNum(Handle hPlugin, int iNumParams)
+{
+    int iSkinNum = GetNativeCell(1);
+
+    if(g_iPaintsCount < iSkinNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetSkinDisplayNameBySkinNum(iSkinNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_IsNativeSkin(Handle hPlugin, int iNumParams)
+{
+	int iSkinNum = GetNativeCell(1);
+	int iItemNum = GetNativeCell(2);
+	int iItemType = GetNativeCell(3);
+	
+	if(iItemType < 0 || iItemType > 1)
+    {
+		return false;
+	}
+    
+	return IsNativeSkin(iSkinNum, iItemNum, iItemType);
+}
+
+public int Native_GetGlovesNumByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arGlovesNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+    return GetGlovesNumByDefIndex(iDefIndex);
+}
+
+public int Native_GetGlovesDefIndexByGlovesNum(Handle hPlugin, int iNumParams)
+{
+    int iSkinNum = GetNativeCell(1);
+
+    if(g_iGlovesCount < iSkinNum)
+    {
+        return -1;
+    }
+    return GetGlovesDefIndexByGlovesNum(iSkinNum);
+}
+
+public int Native_GetGlovesDisplayNameByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arGlovesNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetGlovesDisplayNameByDefIndex(iDefIndex, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetGlovesDisplayNameByGlovesNum(Handle hPlugin, int iNumParams)
+{
+    int iGloveNum = GetNativeCell(1);
+
+    if(g_iGlovesCount < iGloveNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetGlovesDisplayNameByGlovesNum(iGloveNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetGlovesWorldModelByDefIndex(Handle plugin, int numParams)
+{
+    int iDefIndex = GetNativeCell(1);
+    if(g_arGlovesNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szWorldModel[PLATFORM_MAX_PATH];
+
+    if(!GetGlovesWorldModelByDefIndex(iDefIndex, szWorldModel, sizeof(szWorldModel)))
+    {
+        return false;
+    }
+
+    return SetNativeString(2, szWorldModel, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+

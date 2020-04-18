@@ -70,10 +70,12 @@
 #define SEQUENCE_BOWIE_HEAVY_BACKSTAB1 10
 #define SEQUENCE_BOWIE_LOOKAT01 11
 
-
+#define ITEMTYPE_WEAPON 0
+#define ITEMTYPE_GLOVES 1
 
 native int      eItems_GetWeaponCount();
 native int      eItems_GetPaintsCount();
+native int      eItems_GetGlovesCount();
 
 
 native bool     eItems_AreItemsSynced();
@@ -213,3 +215,24 @@ native float    eItems_GetWeaponCycleTimeByWeaponNum(int iWeaponNum);
 native float    eItems_GetWeaponCycleTimeByDefIndex(int iDefIndex);
 native float    eItems_GetWeaponCycleTimeByWeapon(int iWeapon);
 native float    eItems_GetWeaponCycleTimeByClassName(const char[] szClassName);
+
+
+/*              Skins             */
+
+native bool     eItems_IsSkinNumGloveApplicable(int iSkinNum);
+native int      eItems_GetSkinNumByDefIndex(int iDefIndex);
+native int      eItems_GetSkinDefIndexBySkinNum(int iSkinNum);
+native bool     eItems_GetSkinDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetSkinDisplayNameBySkinNum(int iSkinNum, char[] szBuffer, int iLength);
+native bool     eItems_IsNativeSkin(int iSkinNum, int iItemNum, int iItemType);
+
+/*              Gloves             */
+
+native int      eItems_GetGlovesNumByDefIndex(int iDefIndex);
+native int      eItems_GetGlovesDefIndexByGlovesNum(int iGlovesNum);
+native bool     eItems_GetGlovesDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetGlovesDisplayNameByGlovesNum(int iGlovesNum, char[] szBuffer, int iLength);
+
+
+native bool     eItems_GetGlovesWorldModelByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+

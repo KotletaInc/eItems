@@ -9,7 +9,7 @@
 
 #define TAG_NCLR "[eItems]"
 #define AUTHOR "ESK0 (Original author: SM9)"
-#define VERSION "0.3"
+#define VERSION "0.4"
 
 #include "files/globals.sp"
 #include "files/natives.sp"
@@ -26,17 +26,20 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-    //
-    g_smSkinsNames      = new StringMap();
+    //Skins
+    g_smSkinInfo      = new StringMap();
+    g_arSkinsNum        = new ArrayList();
 
     // Weapons
     g_smWeaponPaints    = new StringMap();
     g_smWeaponInfo      = new StringMap();
-
-    // Nums
-    g_arSkinsNum        = new ArrayList();
     g_arWeaponsNum      = new ArrayList();
 
+    // Gloves
+    g_smGlovePaints    = new StringMap();
+    g_smGloveInfo      = new StringMap();
+    g_arGlovesNum      = new ArrayList();
+    
     g_cvHibernationWhenEmpty    = FindConVar("sv_hibernate_when_empty");
     g_iHibernateWhenEmpty       = g_cvHibernationWhenEmpty.IntValue;
 
@@ -63,11 +66,14 @@ public void OnPluginStart()
 
 public void OnPluginEnd()
 {
-    delete g_smSkinsNames;
+    delete g_smSkinInfo;
+    delete g_arSkinsNum;
     delete g_smWeaponPaints;
     delete g_smWeaponInfo;
-    delete g_arSkinsNum;
     delete g_arWeaponsNum;
+    delete g_smGlovePaints;
+    delete g_smGloveInfo;  
+    delete g_arGlovesNum;  
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
@@ -173,6 +179,10 @@ public void ParseData(any json)
 
     ParseWeapons(jWeapons);
 
+    /*             Gloves parse                */
+
+    ParseGloves(jGloves);
+
 
     delete jRoot;
     delete jWeapons;
@@ -187,8 +197,7 @@ public void ParseData(any json)
     delete jStickers;
 
     float fEnd = GetEngineTime();
-    PrintToServer("%s Items synced in %0.5f seconds", TAG_NCLR, fEnd - g_fStart);
-    PrintToServer("%s Items synced successfully", TAG_NCLR);
+    PrintToServer("%s Items synced successfully in %0.5f seconds", TAG_NCLR, fEnd - g_fStart);
     g_bItemsSynced = true;
     g_bItemsSyncing = false;
 
@@ -350,6 +359,7 @@ public void ParseWeapons(JSONArray array)
 
 public void ParsePaints(JSONArray array)
 {
+
     g_iPaintsCount = array.Length;
     JSONObject jItem;
     int iDefIndex = 0;
@@ -372,10 +382,77 @@ public void ParsePaints(JSONArray array)
         }
 
         IntToString(iDefIndex, szSkinDef, sizeof(szSkinDef));
-        g_smSkinsNames.SetString(szSkinDef, szDisplayName);
+
+        eSkinInfo SkinInfo;
+        SkinInfo.SkinNum = iSkinNum;
+        strcopy(SkinInfo.DisplayName, sizeof(eSkinInfo::DisplayName), szDisplayName);
+        SkinInfo.GloveApplicable = false;
+        g_smSkinInfo.SetArray(szSkinDef, SkinInfo, sizeof(eSkinInfo));
+
         delete jItem;
     }
     PrintToServer("%s %i paints synced successfully!", TAG_NCLR, array.Length);
+}
+
+public void ParseGloves(JSONArray array)
+{
+
+    g_iGlovesCount = array.Length;
+    JSONObject jItem;
+
+    int iDefIndex = 0;
+    int iSkinDefIndex;
+    char szSkinDef[12];
+    char szDisplayName[64];
+    char szViewModel[PLATFORM_MAX_PATH];
+    char szWorldModel[PLATFORM_MAX_PATH];
+    char szGloveDef[12];
+    char szPosTemp[12];
+
+    for(int iGloveNum = 0; iGloveNum < array.Length; iGloveNum++)
+    {
+        jItem = view_as<JSONObject>(array.Get(iGloveNum));
+
+        iDefIndex = jItem.GetInt("def_index");
+        g_arGlovesNum.Push(iDefIndex);
+
+        jItem.GetString("item_name", szDisplayName, sizeof(szDisplayName));
+        jItem.GetString("view_model", szViewModel, sizeof(szViewModel));
+        jItem.GetString("world_model", szWorldModel, sizeof(szWorldModel));
+
+        IntToString(iDefIndex, szGloveDef, sizeof(szGloveDef));
+
+        ArrayList arGlovePaints = new ArrayList();
+        if(jItem.HasKey("paints"))
+        {
+            JSONObject jPaintsObj = view_as<JSONObject>(jItem.Get("paints"));
+            for(int iPos = 0; iPos < jPaintsObj.Size; iPos++)
+            {
+                IntToString(iPos, szPosTemp, sizeof(szPosTemp));
+                iSkinDefIndex = jPaintsObj.GetInt(szPosTemp);
+                IntToString(iSkinDefIndex, szSkinDef, sizeof(szSkinDef));
+                eSkinInfo SkinInfo;
+                g_smSkinInfo.GetArray(szSkinDef, SkinInfo, sizeof(eSkinInfo));
+                SkinInfo.GloveApplicable = true;
+                g_smSkinInfo.SetArray(szSkinDef, SkinInfo, sizeof(eSkinInfo));
+                arGlovePaints.Push(iSkinDefIndex);
+            }
+            g_smGlovePaints.SetValue(szGloveDef, arGlovePaints);
+            delete jPaintsObj;
+        }
+
+        eGlovesInfo GloveInfo;
+        GloveInfo.GloveNum = iGloveNum;
+        strcopy(GloveInfo.DisplayName, sizeof(eGlovesInfo::DisplayName), szDisplayName);
+        strcopy(GloveInfo.ViewModel, sizeof(eGlovesInfo::ViewModel), szViewModel);
+        strcopy(GloveInfo.WorldModel, sizeof(eGlovesInfo::WorldModel), szWorldModel);
+        GloveInfo.Paints = arGlovePaints;
+
+        g_smGloveInfo.SetArray(szGloveDef, GloveInfo, sizeof(eGlovesInfo));
+
+        delete jItem;
+    }
+    PrintToServer("%s %i gloves synced successfully!", TAG_NCLR, array.Length);
 }
 
 stock void CheckHibernation(bool bToDefault = false)
