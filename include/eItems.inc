@@ -76,6 +76,8 @@
 native int      eItems_GetWeaponCount();
 native int      eItems_GetPaintsCount();
 native int      eItems_GetGlovesCount();
+native int      eItems_GetMusicKitsCount();
+native int      eItems_GetPinsCount();
 
 
 native bool     eItems_AreItemsSynced();
@@ -239,3 +241,17 @@ native bool     eItems_GetGlovesWorldModelByGlovesNum(int iGlovesNum, char[] szB
 native bool     eItems_GetGlovesWorldModelByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
 native int      eItems_GetGlovesNumBySkinNum(int iSkinNum);
 
+
+/*              MusicKits             */
+
+native int      eItems_GetMusicKitNumByDefIndex(int iDefIndex);
+native int      eItems_GetMusicKitDefIndexByMusicKitNum(int iDefIndex);
+native bool     eItems_GetMusicKitDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetMusicKitDisplayNameByMusicKitNum(int iDefIndex, char[] szBuffer, int iLength);
+
+/*              Pins             */
+
+native int      eItems_GetPinNumByDefIndex(int iDefIndex);
+native int      eItems_GetPinDefIndexByPinNum(int iDefIndex);
+native bool     eItems_GetPinDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetPinDisplayNameByPinNum(int iDefIndex, char[] szBuffer, int iLength);

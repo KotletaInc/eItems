@@ -9,7 +9,7 @@
 
 #define TAG_NCLR "[eItems]"
 #define AUTHOR "ESK0 (Original author: SM9)"
-#define VERSION "0.6"
+#define VERSION "0.7"
 
 #include "files/globals.sp"
 #include "files/client.sp"
@@ -29,8 +29,9 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+
     //Skins
-    g_smSkinInfo      = new StringMap();
+    g_smSkinInfo        = new StringMap();
     g_arSkinsNum        = new ArrayList();
 
     // Weapons
@@ -39,9 +40,17 @@ public void OnPluginStart()
     g_arWeaponsNum      = new ArrayList();
 
     // Gloves
-    g_smGlovePaints    = new StringMap();
-    g_smGloveInfo      = new StringMap();
-    g_arGlovesNum      = new ArrayList();
+    g_smGlovePaints     = new StringMap();
+    g_smGloveInfo       = new StringMap();
+    g_arGlovesNum       = new ArrayList();
+
+    // Music Kits
+    g_arMusicKitsNum    = new ArrayList();
+    g_smMusicKitInfo    = new StringMap();
+
+    // Pins
+    g_arPinsNum         = new ArrayList();
+    g_smPinInfo         = new StringMap();
     
     g_cvHibernationWhenEmpty    = FindConVar("sv_hibernate_when_empty");
     g_iHibernateWhenEmpty       = g_cvHibernationWhenEmpty.IntValue;
@@ -79,14 +88,20 @@ public void OnPluginEnd()
 {
     delete g_smSkinInfo;
     delete g_arSkinsNum;
-    
+
     delete g_smWeaponPaints;
     delete g_smWeaponInfo;
     delete g_arWeaponsNum;
 
     delete g_smGlovePaints;
     delete g_smGloveInfo;  
-    delete g_arGlovesNum;  
+    delete g_arGlovesNum;
+
+    delete g_arMusicKitsNum;
+    delete g_smMusicKitInfo;
+
+    delete g_arPinsNum;
+    delete g_smPinInfo;
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)

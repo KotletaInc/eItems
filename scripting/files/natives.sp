@@ -3,7 +3,8 @@ public void CreateNatives()
     CreateNative("eItems_GetWeaponCount", Native_GetWeaponCount);
     CreateNative("eItems_GetPaintsCount", Native_GetPaintsCount);
     CreateNative("eItems_GetGlovesCount", Native_GetGlovesCount);
-    
+    CreateNative("eItems_GetMusicKitsCount", Native_GetMusicKitsCount);
+    CreateNative("eItems_GetPinsCount", Native_GetPinsCount);
 
 
     CreateNative("eItems_AreItemsSynced", Native_AreItemsSynced);
@@ -135,9 +136,21 @@ public void CreateNatives()
     CreateNative("eItems_GetGlovesWorldModelByDefIndex", Native_GetGlovesWorldModelByDefIndex);
     CreateNative("eItems_GetGlovesNumBySkinNum", Native_GetGlovesNumBySkinNum);
     
-    
+    /*              Music Kits            */  
 
+    CreateNative("eItems_GetMusicKitNumByDefIndex", Native_GetMusicKitNumByDefIndex);
+    CreateNative("eItems_GetMusicKitDefIndexByMusicKitNum", Native_GetMusicKitDefIndexByMusicKitNum);
+    CreateNative("eItems_GetMusicKitDisplayNameByDefIndex", Native_GetMusicKitDisplayNameByDefIndex);
+    CreateNative("eItems_GetMusicKitDisplayNameByMusicKitNum", Native_GetMusicKitDisplayNameByMusicKitNum);
+
+    /*              Pins            */  
+
+    CreateNative("eItems_GetPinNumByDefIndex", Native_GetPinNumByDefIndex);
+    CreateNative("eItems_GetPinDefIndexByPinNum", Native_GetPinDefIndexByPinNum);
+    CreateNative("eItems_GetPinDisplayNameByDefIndex", Native_GetPinDisplayNameByDefIndex);
+    CreateNative("eItems_GetPinDisplayNameByPinNum", Native_GetPinDisplayNameByPinNum);
 }
+
 
 public int Native_GetWeaponCount(Handle plugin, int numParams)
 {
@@ -152,6 +165,16 @@ public int Native_GetPaintsCount(Handle plugin, int numParams)
 public int Native_GetGlovesCount(Handle plugin, int numParams)
 {
     return GetGlovesCount();
+}
+
+public int Native_GetMusicKitsCount(Handle plugin, int numParams)
+{
+    return GetMusicKitsCount();
+}
+
+public int Native_GetPinsCount(Handle plugin, int numParams)
+{
+    return GetPinsCount();
 }
 
 public int Native_AreItemsSynced(Handle plugin, int numParams)
@@ -1355,5 +1378,125 @@ public int Native_GetGlovesNumBySkinNum(Handle plugin, int numParams)
 
     return GetGlovesNumBySkinNum(iSkinNum);
 }
+    /*      Music Kits      */
 
+public int Native_GetMusicKitNumByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
 
+    if(g_arMusicKitsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+    return GetMusicKitNumByDefIndex(iDefIndex);
+}
+
+public int Native_GetMusicKitDefIndexByMusicKitNum(Handle hPlugin, int iNumParams)
+{
+    int iMusicKitNum = GetNativeCell(1);
+
+    if(g_iMusicKitsCount < iMusicKitNum)
+    {
+        return -1;
+    }
+    return GetMusicKitDefIndexByMusicKitNum(iMusicKitNum);
+}
+
+public int Native_GetMusicKitDisplayNameByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arMusicKitsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetMusicKitDisplayNameByDefIndex(iDefIndex, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetMusicKitDisplayNameByMusicKitNum(Handle hPlugin, int iNumParams)
+{
+    int iMusicKitNum = GetNativeCell(1);
+
+    if(g_iMusicKitsCount < iMusicKitNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetMusicKitDisplayNameByMusicKitNum(iMusicKitNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+    /*      Pins      */
+
+public int Native_GetPinNumByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arPinsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+    return GetPinNumByDefIndex(iDefIndex);
+}
+
+public int Native_GetPinDefIndexByPinNum(Handle hPlugin, int iNumParams)
+{
+    int iPinNum = GetNativeCell(1);
+
+    if(g_iPinsCount < iPinNum)
+    {
+        return -1;
+    }
+    return GetPinDefIndexByPinNum(iPinNum);
+}
+
+public int Native_GetPinDisplayNameByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arPinsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetPinDisplayNameByDefIndex(iDefIndex, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetPinDisplayNameByPinNum(Handle hPlugin, int iNumParams)
+{
+    int iPinNum = GetNativeCell(1);
+
+    if(g_iPinsCount < iPinNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetPinDisplayNameByPinNum(iPinNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}

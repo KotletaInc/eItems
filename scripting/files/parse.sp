@@ -88,6 +88,13 @@ public void ParseData(JSONObject jRoot)
 
     ParseGloves(jGloves);
 
+    /*           Music Kits parse               */
+
+    ParseMusicKits(jMusicKits);
+
+    /*              Pins parse                  */
+
+    ParsePins(jPins);
 
     delete jRoot;
     delete jWeapons;
@@ -358,4 +365,66 @@ public void ParseGloves(JSONArray array)
         delete jItem;
     }
     PrintToServer("%s %i gloves synced successfully!", TAG_NCLR, array.Length);
+}
+
+public void ParseMusicKits(JSONArray array)
+{
+
+    g_iMusicKitsCount = array.Length;
+    JSONObject jItem;
+
+    int iDefIndex = 0;
+    char szDisplayName[48];
+    char szMusicKitDefIndex[12];
+
+    for(int iMusicKitNum = 0; iMusicKitNum < array.Length; iMusicKitNum++)
+    {
+        jItem = view_as<JSONObject>(array.Get(iMusicKitNum));
+
+        iDefIndex = jItem.GetInt("def_index");
+        g_arMusicKitsNum.Push(iDefIndex);
+        jItem.GetString("item_name", szDisplayName, sizeof(szDisplayName));
+
+        IntToString(iDefIndex, szMusicKitDefIndex, sizeof(szMusicKitDefIndex));
+
+        eMusicKitsInfo MusicKitsInfo;
+        MusicKitsInfo.MusicKitNum = iMusicKitNum;
+        strcopy(MusicKitsInfo.DisplayName, sizeof(eMusicKitsInfo::DisplayName), szDisplayName);
+
+        g_smMusicKitInfo.SetArray(szMusicKitDefIndex, MusicKitsInfo, sizeof(eMusicKitsInfo));
+
+        delete jItem;
+    }
+    PrintToServer("%s %i music kits synced successfully!", TAG_NCLR, array.Length);
+}
+
+public void ParsePins(JSONArray array)
+{
+
+    g_iPinsCount = array.Length;
+    JSONObject jItem;
+
+    int iDefIndex = 0;
+    char szDisplayName[48];
+    char szPinKitDefIndex[12];
+
+    for(int iPinNum = 0; iPinNum < array.Length; iPinNum++)
+    {
+        jItem = view_as<JSONObject>(array.Get(iPinNum));
+
+        iDefIndex = jItem.GetInt("def_index");
+        g_arPinsNum.Push(iDefIndex);
+        jItem.GetString("item_name", szDisplayName, sizeof(szDisplayName));
+
+        IntToString(iDefIndex, szPinKitDefIndex, sizeof(szPinKitDefIndex));
+
+        ePinInfo PinInfo;
+        PinInfo.PinNum = iPinNum;
+        strcopy(PinInfo.DisplayName, sizeof(ePinInfo::DisplayName), szDisplayName);
+
+        g_smPinInfo.SetArray(szPinKitDefIndex, PinInfo, sizeof(ePinInfo));
+
+        delete jItem;
+    }
+    PrintToServer("%s %i pins synced successfully!", TAG_NCLR, array.Length);
 }

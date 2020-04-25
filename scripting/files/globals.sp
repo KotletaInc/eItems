@@ -17,6 +17,18 @@ enum struct eGlovesInfo
     ArrayList Paints;
 }
 
+enum struct eMusicKitsInfo
+{
+    int MusicKitNum;
+    char DisplayName[48];
+}
+
+enum struct ePinInfo
+{
+    int PinNum;
+    char DisplayName[48];
+}
+
 enum struct eWeaponInfo
 {
     int WeaponNum;
@@ -60,11 +72,19 @@ StringMap g_smGlovePaints = null;
 StringMap g_smGloveInfo = null;
 ArrayList g_arGlovesNum = null;
 
+ArrayList g_arMusicKitsNum = null;
+StringMap g_smMusicKitInfo = null;
+
+ArrayList g_arPinsNum = null;
+StringMap g_smPinInfo = null;
+
 float g_fStart;
 
 int g_iWeaponCount = 0;
 int g_iPaintsCount = 0;
 int g_iGlovesCount = 0;
+int g_iMusicKitsCount = 0;
+int g_iPinsCount = 0;
 
 bool g_bItemsSynced = false;
 bool g_bItemsSyncing = false;

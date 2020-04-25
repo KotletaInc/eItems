@@ -13,6 +13,16 @@ public int GetGlovesCount()
     return g_iGlovesCount;
 }
 
+public int GetMusicKitsCount()
+{
+    return g_iMusicKitsCount;
+}
+
+public int GetPinsCount()
+{
+    return g_iPinsCount;
+}
+
 public bool AreItemsSynced()
 {
     return g_bItemsSynced;
@@ -211,6 +221,11 @@ public int GetWeaponDefIndexByWeaponNum(int iWeaponNum)
         return -1;
     }
 
+    if(iWeaponNum < 0)
+    {
+        return -1;
+    }
+
     return g_arWeaponsNum.Get(iWeaponNum);
 }
 
@@ -233,7 +248,7 @@ public int GetWeaponDefIndexByClassName(const char[] szClassName)
 
 public bool IsValidWeapon(int iWeapon)
 {
-    if(!IsValidEntity(iWeapon) || !IsValidEdict(iWeapon) || iWeapon < 0)
+    if(!IsValidEntity(iWeapon) || !IsValidEdict(iWeapon) || iWeapon <= 0)
     {
         return false;
     }
@@ -2281,6 +2296,100 @@ public int GetGlovesNumBySkinNum(int iSkinNum)
     }
     return -1;
 }
+    /*      Music Kits      */
 
+public int GetMusicKitNumByDefIndex(int iDefIndex)
+{
+    int iIndex = g_arMusicKitsNum.FindValue(iDefIndex);
+    if(iIndex == -1)
+    {
+        return -1;
+    }
 
+    return iIndex;
+}
 
+public int GetMusicKitDefIndexByMusicKitNum(int iMusicKitNum)
+{
+    if(g_arMusicKitsNum.Length < iMusicKitNum)
+    {
+        return -1;
+    }
+
+    return g_arMusicKitsNum.Get(iMusicKitNum);
+}
+
+public bool GetMusicKitDisplayNameByDefIndex(int iDefIndex, char[] szDisplayName, int iLen)
+{
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eMusicKitsInfo MusicKitsInfo;
+    g_smMusicKitInfo.GetArray(szDefIndex, MusicKitsInfo, sizeof(eMusicKitsInfo));
+
+    strcopy(szDisplayName, iLen, MusicKitsInfo.DisplayName);
+    return true;
+}
+
+public bool GetMusicKitDisplayNameByMusicKitNum(int iMusicKitNum, char[] szDisplayName, int iLen)
+{
+    int iDefIndex = GetMusicKitDefIndexByMusicKitNum(iMusicKitNum);
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eMusicKitsInfo MusicKitsInfo;
+    g_smMusicKitInfo.GetArray(szDefIndex, MusicKitsInfo, sizeof(eMusicKitsInfo));
+
+    strcopy(szDisplayName, iLen, MusicKitsInfo.DisplayName);
+    return true;
+}
+
+    /*      Pins      */
+
+public int GetPinNumByDefIndex(int iDefIndex)
+{
+    int iIndex = g_arPinsNum.FindValue(iDefIndex);
+    if(iIndex == -1)
+    {
+        return -1;
+    }
+
+    return iIndex;
+}
+
+public int GetPinDefIndexByPinNum(int iPinNum)
+{
+    if(g_arPinsNum.Length < iPinNum)
+    {
+        return -1;
+    }
+
+    return g_arPinsNum.Get(iPinNum);
+}
+
+public bool GetPinDisplayNameByDefIndex(int iDefIndex, char[] szDisplayName, int iLen)
+{
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    ePinInfo PinInfo;
+    g_smPinInfo.GetArray(szDefIndex, PinInfo, sizeof(ePinInfo));
+
+    strcopy(szDisplayName, iLen, PinInfo.DisplayName);
+    return true;
+}
+
+public bool GetPinDisplayNameByPinNum(int iPinNum, char[] szDisplayName, int iLen)
+{
+    int iDefIndex = GetPinDefIndexByPinNum(iPinNum);
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    ePinInfo PinInfo;
+    g_smPinInfo.GetArray(szDefIndex, PinInfo, sizeof(ePinInfo));
+
+    strcopy(szDisplayName, iLen, PinInfo.DisplayName);
+    return true;
+}
