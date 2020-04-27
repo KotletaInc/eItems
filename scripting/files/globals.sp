@@ -29,6 +29,32 @@ enum struct ePinInfo
     char DisplayName[48];
 }
 
+enum struct eCoinsSets
+{
+    int CoinSetNum;
+    char DisplayName[48];
+    ArrayList Coins;
+}
+
+enum struct eCoinInfo
+{
+    int CoinNum;
+    char DisplayName[48];
+}
+
+enum struct eStickersSets
+{
+    int StickerSetNum;
+    char DisplayName[48];
+    ArrayList Stickers;
+}
+
+enum struct eStickerInfo
+{
+    int StickerNum;
+    char DisplayName[48];
+}
+
 enum struct eWeaponInfo
 {
     int WeaponNum;
@@ -40,6 +66,7 @@ enum struct eWeaponInfo
     int Team;
     int Slot;
     int ClipAmmo;
+    int StickerSlotsCount;
     int ReserveAmmo;
     int MaxPlayerSpeed;
     int Price;
@@ -78,6 +105,16 @@ StringMap g_smMusicKitInfo = null;
 ArrayList g_arPinsNum = null;
 StringMap g_smPinInfo = null;
 
+ArrayList g_arCoinsSetsNum = null;
+ArrayList g_arCoinsNum = null;
+StringMap g_smCoinsSets = null;
+StringMap g_smCoinsInfo = null;
+
+ArrayList g_arStickersSetsNum = null;
+ArrayList g_arStickersNum = null;
+StringMap g_smStickersSets = null;
+StringMap g_smStickersInfo = null;
+
 float g_fStart;
 
 int g_iWeaponCount = 0;
@@ -85,6 +122,10 @@ int g_iPaintsCount = 0;
 int g_iGlovesCount = 0;
 int g_iMusicKitsCount = 0;
 int g_iPinsCount = 0;
+int g_iCoinsSetsCount = 0;
+int g_iCoinsCount = 0;
+int g_iStickersSetsCount = 0;
+int g_iStickersCount = 0;
 
 bool g_bItemsSynced = false;
 bool g_bItemsSyncing = false;

@@ -78,6 +78,11 @@ native int      eItems_GetPaintsCount();
 native int      eItems_GetGlovesCount();
 native int      eItems_GetMusicKitsCount();
 native int      eItems_GetPinsCount();
+native int      eItems_GetCoinsCount();
+native int      eItems_GetCoinsSetsCount();
+native int      eItems_GetStickersCount();
+native int      eItems_GetStickersSetsCount();
+
 
 
 native bool     eItems_AreItemsSynced();
@@ -218,6 +223,11 @@ native float    eItems_GetWeaponCycleTimeByDefIndex(int iDefIndex);
 native float    eItems_GetWeaponCycleTimeByWeapon(int iWeapon);
 native float    eItems_GetWeaponCycleTimeByClassName(const char[] szClassName);
 
+    /*     Stickers Slots     */
+
+native int      eItems_GetWeaponStickersSlotsByWeaponNum(int iWeaponNum);
+native int      eItems_GetWeaponStickersSlotsByDefIndex(int iDefIndex);
+native int      eItems_GetWeaponStickersSlotsByWeapon(int iWeapon);
 
 /*              Skins             */
 
@@ -245,13 +255,41 @@ native int      eItems_GetGlovesNumBySkinNum(int iSkinNum);
 /*              MusicKits             */
 
 native int      eItems_GetMusicKitNumByDefIndex(int iDefIndex);
-native int      eItems_GetMusicKitDefIndexByMusicKitNum(int iDefIndex);
+native int      eItems_GetMusicKitDefIndexByMusicKitNum(int iMusicKitNum);
 native bool     eItems_GetMusicKitDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
-native bool     eItems_GetMusicKitDisplayNameByMusicKitNum(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetMusicKitDisplayNameByMusicKitNum(int iMusicKitNum, char[] szBuffer, int iLength);
 
 /*              Pins             */
 
 native int      eItems_GetPinNumByDefIndex(int iDefIndex);
-native int      eItems_GetPinDefIndexByPinNum(int iDefIndex);
+native int      eItems_GetPinDefIndexByPinNum(int iPinNum);
 native bool     eItems_GetPinDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
-native bool     eItems_GetPinDisplayNameByPinNum(int iDefIndex, char[] szBuffer, int iLength);
+native bool     eItems_GetPinDisplayNameByPinNum(int iPinNum, char[] szBuffer, int iLength);
+
+/*              Coins             */
+
+native int      eItems_GetCoinSetIdByCoinSetNum(int iCoinSetNum);
+native int      eItems_GetCoinSetNumByCoinSetId(int iCoinSetId);
+native bool     eItems_GetCoinSetDisplayNameByCoinSetId(int iCoinSetId, char[] szBuffer, int iLength);
+native bool     eItems_GetCoinSetDisplayNameByCoinSetNum(int iCoinSetNum, char[] szBuffer, int iLength);
+
+native int      eItems_GetCoinDefIndexByCoinNum(int iCoinNum);
+native int      eItems_GetCoinNumByDefIndex(int iDefIndex);
+native bool     eItems_GetCoinDisplayNameByCoinNum(int iCoinNum, char[] szBuffer, int iLength);
+native bool     eItems_GetCoinDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+
+native bool     eItems_IsCoinInSet(int iCoinNum, int iCoinSetId);
+
+/*              Stickers             */
+
+native int      eItems_GetStickerSetIdByStickerSetNum(int iStickerSetNum);
+native int      eItems_GetStickerSetNumByStickerSetId(int iStickerSetId);
+native bool     eItems_GetStickerSetDisplayNameByStickerSetId(int iStickerSetId, char[] szBuffer, int iLength);
+native bool     eItems_GetStickerSetDisplayNameByStickerSetNum(int iStickerSetNum, char[] szBuffer, int iLength);
+
+native int      eItems_GetStickerDefIndexByStickerNum(int iStickerNum);
+native int      eItems_GetStickerNumByDefIndex(int iDefIndex);
+native bool     eItems_GetStickerDisplayNameByStickerNum(int iStickerNum, char[] szBuffer, int iLength);
+native bool     eItems_GetStickerDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
+
+native bool     eItems_IsStickerInSet(int iStickerNum, int iStickerSetId);

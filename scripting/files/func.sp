@@ -23,6 +23,26 @@ public int GetPinsCount()
     return g_iPinsCount;
 }
 
+public int GetCoinsCount()
+{
+    return g_iCoinsCount;
+}
+
+public int GetCoinsSetsCount()
+{
+    return g_iCoinsSetsCount;
+}
+
+public int GetStickersCount()
+{
+    return g_iStickersCount;
+}
+
+public int GetStickersSetsCount()
+{
+    return g_iStickersSetsCount;
+}
+
 public bool AreItemsSynced()
 {
     return g_bItemsSynced;
@@ -1320,6 +1340,63 @@ public float GetWeaponCycleTimeByClassName(const char[] szClassName)
     return -1.0;
 }
 
+    //Stickers Slots
+public int GetWeaponStickersSlotsByWeaponNum(int iWeaponNum)
+{
+    if(g_iWeaponCount < iWeaponNum)
+    {
+        return -1;
+    }
+
+    char szDefIndex[12];
+    int iDefIndex = GetWeaponDefIndexByWeaponNum(iWeaponNum);
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.StickerSlotsCount;
+}
+
+public int GetWeaponStickersSlotsByDefIndex(int iDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.StickerSlotsCount;
+}
+
+public int GetWeaponStickersSlotsByWeapon(int iWeapon)
+{
+    if(!IsValidWeapon(iWeapon))
+    {
+        return -1;
+    }
+
+    int iDefIndex = GetWeaponDefIndexByWeapon(iWeapon);
+
+    if(iDefIndex <= 0)
+    {
+        return -1;
+    }
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.StickerSlotsCount;
+}
+
 public bool SetWeaponAmmo(int iWeapon, int iReserveAmmo, int iClipAmmo)
 {
     if (iReserveAmmo < 0 && iClipAmmo < 0)
@@ -2392,4 +2469,224 @@ public bool GetPinDisplayNameByPinNum(int iPinNum, char[] szDisplayName, int iLe
 
     strcopy(szDisplayName, iLen, PinInfo.DisplayName);
     return true;
+}
+
+    /*      Coins      */
+
+public int GetCoinSetIdByCoinSetNum(int iCoinSetNum)
+{
+    if(g_arCoinsSetsNum.Length < iCoinSetNum)
+    {
+        return -1;
+    }
+
+    return g_arCoinsSetsNum.Get(iCoinSetNum);
+}
+
+public int GetCoinSetNumByCoinSetId(int iCoinSetId)
+{
+    int iIndex = g_arCoinsSetsNum.FindValue(iCoinSetId);
+    if(iIndex == -1)
+    {
+        return -1;
+    }
+
+    return iIndex;
+}
+
+public bool GetCoinSetDisplayNameByCoinSetNum(int iCoinSetNum, char[] szDisplayName, int iLen)
+{
+    int iCoinSetId = GetCoinSetIdByCoinSetNum(iCoinSetNum);
+
+    char szCoinSetId[12];
+    IntToString(iCoinSetId, szCoinSetId, sizeof(szCoinSetId));
+
+    eCoinsSets CoinsSets;
+    g_smCoinsSets.GetArray(szCoinSetId, CoinsSets, sizeof(eCoinsSets));
+
+    strcopy(szDisplayName, iLen, CoinsSets.DisplayName);
+    return true;
+}
+
+public bool GetCoinSetDisplayNameByCoinSetId(int iCoinSetId, char[] szDisplayName, int iLen)
+{
+    char szCoinSetId[12];
+    IntToString(iCoinSetId, szCoinSetId, sizeof(szCoinSetId));
+
+    eCoinsSets CoinsSets;
+    g_smCoinsSets.GetArray(szCoinSetId, CoinsSets, sizeof(eCoinsSets));
+
+    strcopy(szDisplayName, iLen, CoinsSets.DisplayName);
+    return true;
+}
+
+public int GetCoinDefIndexByCoinNum(int iCoinNum)
+{
+    if(g_arCoinsNum.Length < iCoinNum)
+    {
+        return -1;
+    }
+
+    return g_arCoinsNum.Get(iCoinNum);
+}
+
+public int GetCoinNumByDefIndex(int iDefIndex)
+{
+    int iIndex = g_arCoinsNum.FindValue(iDefIndex);
+    if(iIndex == -1)
+    {
+        return -1;
+    }
+
+    return iIndex;
+}
+
+public bool GetCoinDisplayNameByCoinNum(int iCoinNum, char[] szDisplayName, int iLen)
+{
+    int iDefIndex = GetCoinDefIndexByCoinNum(iCoinNum);
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eCoinInfo CoinInfo;
+    g_smCoinsInfo.GetArray(szDefIndex, CoinInfo, sizeof(eCoinInfo));
+
+    strcopy(szDisplayName, iLen, CoinInfo.DisplayName);
+    return true;
+}
+
+public bool GetCoinDisplayNameByDefIndex(int iDefIndex, char[] szDisplayName, int iLen)
+{
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eCoinInfo CoinInfo;
+    g_smCoinsInfo.GetArray(szDefIndex, CoinInfo, sizeof(eCoinInfo));
+
+    strcopy(szDisplayName, iLen, CoinInfo.DisplayName);
+    return true;
+}
+
+public bool IsCoinInSet(int iCoinNum, int iCoinSetId)
+{
+    int iCoinDefIndex = GetCoinDefIndexByCoinNum(iCoinNum);
+
+    char szCoinSetId[12];
+    IntToString(iCoinSetId, szCoinSetId, sizeof(szCoinSetId));
+    
+    eCoinsSets CoinsSets;
+    g_smCoinsSets.GetArray(szCoinSetId, CoinsSets, sizeof(eCoinsSets));
+
+    ArrayList arCoins = CoinsSets.Coins;
+    return arCoins.FindValue(iCoinDefIndex) != -1;
+}
+
+    /*      Stickers      */
+
+public int GetStickerSetIdByStickerSetNum(int iStickerSetNum)
+{
+    if(g_arStickersSetsNum.Length < iStickerSetNum)
+    {
+        return -1;
+    }
+
+    return g_arStickersSetsNum.Get(iStickerSetNum);
+}
+
+public int GetStickerSetNumByStickerSetId(int iStickerSetId)
+{
+    int iIndex = g_arStickersSetsNum.FindValue(iStickerSetId);
+    if(iIndex == -1)
+    {
+        return -1;
+    }
+
+    return iIndex;
+}
+
+public bool GetStickerSetDisplayNameByStickerSetNum(int iStickerSetNum, char[] szDisplayName, int iLen)
+{
+    int iStickerSetId = GetStickerSetIdByStickerSetNum(iStickerSetNum);
+
+    char szStickerSetId[12];
+    IntToString(iStickerSetId, szStickerSetId, sizeof(szStickerSetId));
+
+    eStickersSets StickersSets;
+    g_smStickersSets.GetArray(szStickerSetId, StickersSets, sizeof(eStickersSets));
+
+    strcopy(szDisplayName, iLen, StickersSets.DisplayName);
+    return true;
+}
+
+public bool GetStickerSetDisplayNameByStickerSetId(int iStickerSetId, char[] szDisplayName, int iLen)
+{
+    char szStickerSetId[12];
+    IntToString(iStickerSetId, szStickerSetId, sizeof(szStickerSetId));
+
+    eStickersSets StickersSets;
+    g_smStickersSets.GetArray(szStickerSetId, StickersSets, sizeof(eStickersSets));
+
+    strcopy(szDisplayName, iLen, StickersSets.DisplayName);
+    return true;
+}
+
+public int GetStickerDefIndexByStickerNum(int iStickerNum)
+{
+    if(g_arStickersNum.Length < iStickerNum)
+    {
+        return -1;
+    }
+
+    return g_arStickersNum.Get(iStickerNum);
+}
+
+public int GetStickerNumByDefIndex(int iDefIndex)
+{
+    int iIndex = g_arStickersNum.FindValue(iDefIndex);
+    if(iIndex == -1)
+    {
+        return -1;
+    }
+
+    return iIndex;
+}
+
+public bool GetStickerDisplayNameByStickerNum(int iStickerNum, char[] szDisplayName, int iLen)
+{
+    int iDefIndex = GetStickerDefIndexByStickerNum(iStickerNum);
+
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eStickerInfo StickerInfo;
+    g_smStickersInfo.GetArray(szDefIndex, StickerInfo, sizeof(eStickerInfo));
+
+    strcopy(szDisplayName, iLen, StickerInfo.DisplayName);
+    return true;
+}
+
+public bool GetStickerDisplayNameByDefIndex(int iDefIndex, char[] szDisplayName, int iLen)
+{
+    char szDefIndex[12];
+    IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eStickerInfo StickerInfo;
+    g_smStickersInfo.GetArray(szDefIndex, StickerInfo, sizeof(eStickerInfo));
+
+    strcopy(szDisplayName, iLen, StickerInfo.DisplayName);
+    return true;
+}
+
+public bool IsStickerInSet(int iStickerNum, int iStickerSetId)
+{
+    int iStickerDefIndex = GetStickerDefIndexByStickerNum(iStickerNum);
+
+    char szStickerSetId[12];
+    IntToString(iStickerSetId, szStickerSetId, sizeof(szStickerSetId));
+    
+    eStickersSets StickersSets;
+    g_smStickersSets.GetArray(szStickerSetId, StickersSets, sizeof(eStickersSets));
+
+    ArrayList arStickers = StickersSets.Stickers;
+    return arStickers.FindValue(iStickerDefIndex) != -1;
 }

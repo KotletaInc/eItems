@@ -64,16 +64,16 @@ public void ParseData(JSONObject jRoot)
     g_bItemsSyncing = true;
     g_fStart = GetEngineTime();
 
-    JSONArray jWeapons      = view_as<JSONArray>(jRoot.Get("weapons"));
-    JSONArray jPaints       = view_as<JSONArray>(jRoot.Get("paints"));
-    JSONArray jGloves       = view_as<JSONArray>(jRoot.Get("gloves"));
-    JSONArray jCoins        = view_as<JSONArray>(jRoot.Get("coins"));
-    JSONArray jPins         = view_as<JSONArray>(jRoot.Get("pins"));
-    JSONArray jCrates       = view_as<JSONArray>(jRoot.Get("crates"));
-    JSONArray jMusicKits    = view_as<JSONArray>(jRoot.Get("music_kits"));
-    JSONArray jPatches      = view_as<JSONArray>(jRoot.Get("patches"));
-    JSONArray jSprayes      = view_as<JSONArray>(jRoot.Get("sprayes"));
-    JSONArray jStickers     = view_as<JSONArray>(jRoot.Get("stickers"));
+    JSONArray   jWeapons        = view_as<JSONArray>(jRoot.Get("weapons"));
+    JSONArray   jPaints         = view_as<JSONArray>(jRoot.Get("paints"));
+    JSONArray   jGloves         = view_as<JSONArray>(jRoot.Get("gloves"));
+    JSONObject  jCoins          = view_as<JSONObject>(jRoot.Get("coins"));
+    JSONArray   jPins           = view_as<JSONArray>(jRoot.Get("pins"));
+    JSONArray   jCrates         = view_as<JSONArray>(jRoot.Get("crates"));
+    JSONArray   jMusicKits      = view_as<JSONArray>(jRoot.Get("music_kits"));
+    JSONArray   jPatches        = view_as<JSONArray>(jRoot.Get("patches"));
+    JSONArray   jSprayes        = view_as<JSONArray>(jRoot.Get("sprayes"));
+    JSONObject  jStickers       = view_as<JSONObject>(jRoot.Get("stickers"));
     
 
     /*              Paints parse                */
@@ -95,6 +95,14 @@ public void ParseData(JSONObject jRoot)
     /*              Pins parse                  */
 
     ParsePins(jPins);
+
+    /*              Coins parse                  */
+
+    ParseCoins(jCoins);
+
+    /*              Stickers parse                  */
+
+    ParseStickers(jStickers);
 
     delete jRoot;
     delete jWeapons;
@@ -133,6 +141,7 @@ public void ParseWeapons(JSONArray array)
     int iTeam;
     int iSlot;
     int iClipAmmo;
+    int iStickerSlotsCount;
     int iReserveAmmo;
     int iMaxPlayerSpeed;
     int iPrice;
@@ -154,7 +163,7 @@ public void ParseWeapons(JSONArray array)
         iPrice = -1;
         iDamage = -1;
         iFullAuto = 0;
-
+        iStickerSlotsCount = 0;
         fCycleTime = 0.0;
         fSpread = 0.0;
  
@@ -172,8 +181,13 @@ public void ParseWeapons(JSONArray array)
         jItem.GetString("view_model", szWeaponViewModel, sizeof(szWeaponViewModel));
         jItem.GetString("world_model", szWeaponWorldModel, sizeof(szWeaponWorldModel));
 
-        IntToString(iWepDefIndex, szWepDefIndex, sizeof(szWepDefIndex));
+        if(!jItem.IsNull("stickers_count"))
+        {
+            iStickerSlotsCount = jItem.GetInt("stickers_count");
+        }
 
+        IntToString(iWepDefIndex, szWepDefIndex, sizeof(szWepDefIndex));
+    
         ArrayList arWeaponPaints = new ArrayList();
         if(jItem.HasKey("paints"))
         {
@@ -259,6 +273,7 @@ public void ParseWeapons(JSONArray array)
         WeaponInfo.MaxPlayerSpeed       = iMaxPlayerSpeed;
         WeaponInfo.Price                = iPrice;
         WeaponInfo.Damage               = iDamage;
+        WeaponInfo.StickerSlotsCount    = iStickerSlotsCount;
         WeaponInfo.FullAuto             = iFullAuto;
         WeaponInfo.CycleTime            = fCycleTime;
         WeaponInfo.Spread               = fSpread;
@@ -427,4 +442,140 @@ public void ParsePins(JSONArray array)
         delete jItem;
     }
     PrintToServer("%s %i pins synced successfully!", TAG_NCLR, array.Length);
+}
+
+public void ParseCoins(JSONObject array)
+{
+    JSONArray jCategories   = view_as<JSONArray>(array.Get("categories"));
+    JSONArray jCoins        = view_as<JSONArray>(array.Get("items"));
+
+    g_iCoinsSetsCount = jCategories.Length;
+    g_iCoinsCount = jCoins.Length;
+
+    int iID;
+    char szDisplayName[48];
+    char szCoinIndex[12];
+    char szCoinSetIndex[12];
+    for(int iCoinSet = 0; iCoinSet < g_iCoinsSetsCount; iCoinSet++)
+    {
+        JSONObject jSet = view_as<JSONObject>(jCategories.Get(iCoinSet));
+
+        iID = jSet.GetInt("id");
+        jSet.GetString("name", szDisplayName, sizeof(szDisplayName));
+        IntToString(iID, szCoinSetIndex, sizeof(szCoinSetIndex));
+        JSONObject jItems = view_as<JSONObject>(jSet.Get("items"));
+
+        ArrayList arCoins = new ArrayList();
+
+        for(int iItems = 0; iItems < jItems.Size; iItems++)
+        {
+            IntToString(iItems, szCoinIndex, sizeof(szCoinIndex));
+
+            int iCoinDefIndex = jItems.GetInt(szCoinIndex);
+            arCoins.Push(iCoinDefIndex);
+        }
+
+
+        g_arCoinsSetsNum.Push(iID);
+
+        eCoinsSets CoinsSets;
+        CoinsSets.CoinSetNum = iCoinSet;
+        strcopy(CoinsSets.DisplayName, sizeof(eCoinsSets::DisplayName), szDisplayName);
+        CoinsSets.Coins = arCoins;
+
+        g_smCoinsSets.SetArray(szCoinSetIndex, CoinsSets, sizeof(eCoinsSets));
+        
+        delete jItems;
+        delete jSet;
+    }
+
+    for(int iCoinNum = 0; iCoinNum < g_iCoinsCount; iCoinNum++)
+    {
+        JSONObject jCoin = view_as<JSONObject>(jCoins.Get(iCoinNum));
+
+        iID = jCoin.GetInt("def_index");
+        IntToString(iID, szCoinIndex, sizeof(szCoinIndex));
+
+        g_arCoinsNum.Push(iID);
+        jCoin.GetString("item_name", szDisplayName, sizeof(szDisplayName));
+        eCoinInfo CoinInfo;
+        CoinInfo.CoinNum = iCoinNum;
+        strcopy(CoinInfo.DisplayName, sizeof(eCoinInfo::DisplayName), szDisplayName);
+
+        g_smCoinsInfo.SetArray(szCoinIndex, CoinInfo, sizeof(eCoinInfo));
+        delete jCoin;
+    }
+
+    delete jCategories;
+    delete jCoins;
+
+    PrintToServer("%s %i coins (in %i sets) synced successfully!", TAG_NCLR, g_iCoinsCount, g_iCoinsSetsCount);
+}
+
+public void ParseStickers(JSONObject array)
+{
+    JSONArray jCategories   = view_as<JSONArray>(array.Get("categories"));
+    JSONArray jStickers     = view_as<JSONArray>(array.Get("items"));
+
+    g_iStickersSetsCount = jCategories.Length;
+    g_iStickersCount = jStickers.Length;
+
+    int iID;
+    char szDisplayName[48];
+    char szStickerIndex[12];
+    char szStickerSetIndex[12];
+    for(int iStickerSet = 0; iStickerSet < g_iStickersSetsCount; iStickerSet++)
+    {
+        JSONObject jSet = view_as<JSONObject>(jCategories.Get(iStickerSet));
+
+        iID = jSet.GetInt("id");
+        jSet.GetString("name", szDisplayName, sizeof(szDisplayName));
+        IntToString(iID, szStickerSetIndex, sizeof(szStickerSetIndex));
+        JSONObject jItems = view_as<JSONObject>(jSet.Get("items"));
+
+        ArrayList arStickers = new ArrayList();
+
+        for(int iItems = 0; iItems < jItems.Size; iItems++)
+        {
+            IntToString(iItems, szStickerIndex, sizeof(szStickerIndex));
+
+            int iStickerDefIndex = jItems.GetInt(szStickerIndex);
+            arStickers.Push(iStickerDefIndex);
+        }
+
+
+        g_arStickersSetsNum.Push(iID);
+
+        eStickersSets StickersSets;
+        StickersSets.StickerSetNum = iStickerSet;
+        strcopy(StickersSets.DisplayName, sizeof(eStickersSets::DisplayName), szDisplayName);
+        StickersSets.Stickers = arStickers;
+
+        g_smStickersSets.SetArray(szStickerSetIndex, StickersSets, sizeof(eStickersSets));
+        
+        delete jItems;
+        delete jSet;
+    }
+
+    for(int iStickerNum = 0; iStickerNum < g_iStickersCount; iStickerNum++)
+    {
+        JSONObject jSticker = view_as<JSONObject>(jStickers.Get(iStickerNum));
+
+        iID = jSticker.GetInt("def_index");
+        IntToString(iID, szStickerIndex, sizeof(szStickerIndex));
+
+        g_arStickersNum.Push(iID);
+        jSticker.GetString("item_name", szDisplayName, sizeof(szDisplayName));
+
+        eStickerInfo StickerInfo;
+        StickerInfo.StickerNum = iStickerNum;
+        strcopy(StickerInfo.DisplayName, sizeof(eStickerInfo::DisplayName), szDisplayName);
+        g_smStickersInfo.SetArray(szStickerIndex, StickerInfo, sizeof(eStickerInfo));
+        delete jSticker;
+    }
+
+    delete jCategories;
+    delete jStickers;
+
+    PrintToServer("%s %i stickers (in %i sets) synced successfully!", TAG_NCLR, g_iStickersCount, g_iStickersSetsCount);
 }

@@ -5,6 +5,10 @@ public void CreateNatives()
     CreateNative("eItems_GetGlovesCount", Native_GetGlovesCount);
     CreateNative("eItems_GetMusicKitsCount", Native_GetMusicKitsCount);
     CreateNative("eItems_GetPinsCount", Native_GetPinsCount);
+    CreateNative("eItems_GetCoinsCount", Native_GetCoinsCount);
+    CreateNative("eItems_GetCoinsSetsCount", Native_GetCoinsSetsCount);
+    CreateNative("eItems_GetStickersCount", Native_GetStickersCount);
+    CreateNative("eItems_GetStickersSetsCount", Native_GetStickersSetsCount);
 
 
     CreateNative("eItems_AreItemsSynced", Native_AreItemsSynced);
@@ -114,6 +118,10 @@ public void CreateNatives()
     CreateNative("eItems_GetWeaponCycleTimeByDefIndex", Native_GetWeaponCycleTimeByDefIndex);
     CreateNative("eItems_GetWeaponCycleTimeByWeapon", Native_GetWeaponCycleTimeByWeapon);
     CreateNative("eItems_GetWeaponCycleTimeByClassName", Native_GetWeaponCycleTimeByClassName);
+    //Stickers Slots
+    CreateNative("eItems_GetWeaponStickersSlotsByWeaponNum", Native_GetWeaponStickersSlotsByWeaponNum);
+    CreateNative("eItems_GetWeaponStickersSlotsByDefIndex", Native_GetWeaponStickersSlotsByDefIndex);
+    CreateNative("eItems_GetWeaponStickersSlotsByWeapon", Native_GetWeaponStickersSlotsByWeapon);
 
     /*              Skins             */
 
@@ -149,6 +157,34 @@ public void CreateNatives()
     CreateNative("eItems_GetPinDefIndexByPinNum", Native_GetPinDefIndexByPinNum);
     CreateNative("eItems_GetPinDisplayNameByDefIndex", Native_GetPinDisplayNameByDefIndex);
     CreateNative("eItems_GetPinDisplayNameByPinNum", Native_GetPinDisplayNameByPinNum);
+
+    /*              Coins            */
+
+    CreateNative("eItems_GetCoinSetIdByCoinSetNum", Native_GetCoinSetIdByCoinSetNum);
+    CreateNative("eItems_GetCoinSetNumByCoinSetId", Native_GetCoinSetNumByCoinSetId);
+    CreateNative("eItems_GetCoinSetDisplayNameByCoinSetNum", Native_GetCoinSetDisplayNameByCoinSetNum);
+    CreateNative("eItems_GetCoinSetDisplayNameByCoinSetId", Native_GetCoinSetDisplayNameByCoinSetId);
+
+    CreateNative("eItems_GetCoinDefIndexByCoinNum", Native_GetCoinDefIndexByCoinNum);
+    CreateNative("eItems_GetCoinNumByDefIndex", Native_GetCoinNumByDefIndex);
+    CreateNative("eItems_GetCoinDisplayNameByCoinNum", Native_GetCoinDisplayNameByCoinNum);
+    CreateNative("eItems_GetCoinDisplayNameByDefIndex", Native_GetCoinDisplayNameByDefIndex);
+
+    CreateNative("eItems_IsCoinInSet", Native_IsCoinInSet);
+
+    /*              Stickers            */
+
+    CreateNative("eItems_GetStickerSetIdByStickerSetNum", Native_GetStickerSetIdByStickerSetNum);
+    CreateNative("eItems_GetStickerSetNumByStickerSetId", Native_GetStickerSetNumByStickerSetId);
+    CreateNative("eItems_GetStickerSetDisplayNameByStickerSetNum", Native_GetStickerSetDisplayNameByStickerSetNum);
+    CreateNative("eItems_GetStickerSetDisplayNameByStickerSetId", Native_GetStickerSetDisplayNameByStickerSetId);
+
+    CreateNative("eItems_GetStickerDefIndexByStickerNum", Native_GetStickerDefIndexByStickerNum);
+    CreateNative("eItems_GetStickerNumByDefIndex", Native_GetStickerNumByDefIndex);
+    CreateNative("eItems_GetStickerDisplayNameByStickerNum", Native_GetStickerDisplayNameByStickerNum);
+    CreateNative("eItems_GetStickerDisplayNameByDefIndex", Native_GetStickerDisplayNameByDefIndex);
+
+    CreateNative("eItems_IsStickerInSet", Native_IsStickerInSet);
 }
 
 
@@ -175,6 +211,26 @@ public int Native_GetMusicKitsCount(Handle plugin, int numParams)
 public int Native_GetPinsCount(Handle plugin, int numParams)
 {
     return GetPinsCount();
+}
+
+public int Native_GetCoinsCount(Handle plugin, int numParams)
+{
+    return GetCoinsCount();
+}
+
+public int Native_GetCoinsSetsCount(Handle plugin, int numParams)
+{
+    return GetCoinsSetsCount();
+}
+
+public int Native_GetStickersCount(Handle plugin, int numParams)
+{
+    return GetStickersCount();
+}
+
+public int Native_GetStickersSetsCount(Handle plugin, int numParams)
+{
+    return GetStickersSetsCount();
 }
 
 public int Native_AreItemsSynced(Handle plugin, int numParams)
@@ -1022,6 +1078,41 @@ public int Native_GetWeaponCycleTimeByClassName(Handle plugin, int numParams)
     return view_as<int>(GetWeaponCycleTimeByClassName(szClassName));
 }
 
+    //Stickers Slots
+public int Native_GetWeaponStickersSlotsByWeaponNum(Handle plugin, int numParams)
+{
+    int iWeaponNum = GetNativeCell(1);
+    if(g_iWeaponCount < iWeaponNum)
+    {
+        return -1;
+    }
+
+    return GetWeaponStickersSlotsByWeaponNum(iWeaponNum);
+}
+
+public int Native_GetWeaponStickersSlotsByDefIndex(Handle plugin, int numParams)
+{
+    int iDefIndex = GetNativeCell(1);
+    if(g_arWeaponsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+
+    return GetWeaponStickersSlotsByDefIndex(iDefIndex);
+}
+
+public int Native_GetWeaponStickersSlotsByWeapon(Handle plugin, int numParams)
+{
+    int iWeapon = GetNativeCell(1);
+    if(!IsValidWeapon(iWeapon))
+    {
+        return -1;
+    }
+
+    return GetWeaponStickersSlotsByWeapon(iWeapon);
+}
+
+
 public int Native_RefillClipAmmo(Handle hPlugin, int iNumParams)
 {
     int iWeapon = GetNativeCell(1);
@@ -1499,4 +1590,274 @@ public int Native_GetPinDisplayNameByPinNum(Handle hPlugin, int iNumParams)
     }
 
     return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+    /*      Coins      */
+
+
+public int Native_GetCoinSetIdByCoinSetNum(Handle hPlugin, int iNumParams)
+{
+    int iCoinSetNum = GetNativeCell(1);
+
+    if(g_iCoinsSetsCount < iCoinSetNum)
+    {
+        return -1;
+    }
+    return GetCoinSetIdByCoinSetNum(iCoinSetNum);
+}
+
+public int Native_GetCoinSetNumByCoinSetId(Handle hPlugin, int iNumParams)
+{
+    int iCoinSetId = GetNativeCell(1);
+
+    if(g_arCoinsSetsNum.FindValue(iCoinSetId) == -1)
+    {
+        return -1;
+    }
+    return GetCoinSetNumByCoinSetId(iCoinSetId);
+}
+
+public int Native_GetCoinSetDisplayNameByCoinSetNum(Handle hPlugin, int iNumParams)
+{
+    int iCoinSetNum = GetNativeCell(1);
+
+    if(g_iCoinsSetsCount < iCoinSetNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetCoinSetDisplayNameByCoinSetNum(iCoinSetNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetCoinSetDisplayNameByCoinSetId(Handle hPlugin, int iNumParams)
+{
+    int iCoinSetId = GetNativeCell(1);
+
+    if(g_arCoinsSetsNum.FindValue(iCoinSetId) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetCoinSetDisplayNameByCoinSetId(iCoinSetId, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetCoinDefIndexByCoinNum(Handle hPlugin, int iNumParams)
+{
+    int iCoinNum = GetNativeCell(1);
+
+    if(g_iCoinsCount < iCoinNum)
+    {
+        return -1;
+    }
+    return GetCoinDefIndexByCoinNum(iCoinNum);
+}
+
+public int Native_GetCoinNumByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arCoinsNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+    return GetCoinNumByDefIndex(iDefIndex);
+}
+
+public int Native_GetCoinDisplayNameByCoinNum(Handle hPlugin, int iNumParams)
+{
+    int iCoinNum = GetNativeCell(1);
+
+    if(g_iCoinsCount < iCoinNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetCoinDisplayNameByCoinNum(iCoinNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetCoinDisplayNameByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arCoinsNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetCoinDisplayNameByDefIndex(iDefIndex, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_IsCoinInSet(Handle hPlugin, int iNumParams)
+{
+    int iCoinNum = GetNativeCell(1);
+    int iCoinSetId = GetNativeCell(2);
+
+    if(iCoinNum < 0 || iCoinSetId < 0)
+    {
+        return false;
+    }
+    
+    return IsCoinInSet(iCoinNum, iCoinSetId);
+}
+    /*      Stickers      */
+
+
+public int Native_GetStickerSetIdByStickerSetNum(Handle hPlugin, int iNumParams)
+{
+    int iStickerSetNum = GetNativeCell(1);
+
+    if(g_iStickersSetsCount < iStickerSetNum)
+    {
+        return -1;
+    }
+    return GetStickerSetIdByStickerSetNum(iStickerSetNum);
+}
+
+public int Native_GetStickerSetNumByStickerSetId(Handle hPlugin, int iNumParams)
+{
+    int iStickerSetId = GetNativeCell(1);
+
+    if(g_arStickersSetsNum.FindValue(iStickerSetId) == -1)
+    {
+        return -1;
+    }
+    return GetStickerSetNumByStickerSetId(iStickerSetId);
+}
+
+public int Native_GetStickerSetDisplayNameByStickerSetNum(Handle hPlugin, int iNumParams)
+{
+    int iStickerSetNum = GetNativeCell(1);
+
+    if(g_iStickersSetsCount < iStickerSetNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetStickerSetDisplayNameByStickerSetNum(iStickerSetNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetStickerSetDisplayNameByStickerSetId(Handle hPlugin, int iNumParams)
+{
+    int iStickerSetId = GetNativeCell(1);
+
+    if(g_arStickersSetsNum.FindValue(iStickerSetId) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetStickerSetDisplayNameByStickerSetId(iStickerSetId, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetStickerDefIndexByStickerNum(Handle hPlugin, int iNumParams)
+{
+    int iStickerNum = GetNativeCell(1);
+
+    if(g_iStickersCount < iStickerNum)
+    {
+        return -1;
+    }
+    return GetStickerDefIndexByStickerNum(iStickerNum);
+}
+
+public int Native_GetStickerNumByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arStickersNum.FindValue(iDefIndex) == -1)
+    {
+        return -1;
+    }
+    return GetStickerNumByDefIndex(iDefIndex);
+}
+
+public int Native_GetStickerDisplayNameByStickerNum(Handle hPlugin, int iNumParams)
+{
+    int iStickerNum = GetNativeCell(1);
+
+    if(g_iStickersCount < iStickerNum)
+    {
+        return -1;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetStickerDisplayNameByStickerNum(iStickerNum, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_GetStickerDisplayNameByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iDefIndex = GetNativeCell(1);
+
+    if(g_arStickersNum.FindValue(iDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDisplayName[48];
+
+    if(!GetStickerDisplayNameByDefIndex(iDefIndex, szDisplayName, sizeof(szDisplayName)))
+    {
+       return false; 
+    }
+
+    return SetNativeString(2, szDisplayName, GetNativeCell(3)) == SP_ERROR_NONE;
+}
+
+public int Native_IsStickerInSet(Handle hPlugin, int iNumParams)
+{
+    int iStickerNum = GetNativeCell(1);
+    int iStickerSetId = GetNativeCell(2);
+
+    if(iStickerNum < 0 || iStickerSetId < 0)
+    {
+        return false;
+    }
+    
+    return IsStickerInSet(iStickerNum, iStickerSetId);
 }

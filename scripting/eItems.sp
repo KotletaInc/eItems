@@ -9,7 +9,7 @@
 
 #define TAG_NCLR "[eItems]"
 #define AUTHOR "ESK0 (Original author: SM9)"
-#define VERSION "0.7"
+#define VERSION "0.8"
 
 #include "files/globals.sp"
 #include "files/client.sp"
@@ -31,26 +31,38 @@ public void OnPluginStart()
 {
 
     //Skins
-    g_smSkinInfo        = new StringMap();
-    g_arSkinsNum        = new ArrayList();
+    g_smSkinInfo            = new StringMap();
+    g_arSkinsNum            = new ArrayList();
 
     // Weapons
-    g_smWeaponPaints    = new StringMap();
-    g_smWeaponInfo      = new StringMap();
-    g_arWeaponsNum      = new ArrayList();
+    g_smWeaponPaints        = new StringMap();
+    g_smWeaponInfo          = new StringMap();
+    g_arWeaponsNum          = new ArrayList();
 
     // Gloves
-    g_smGlovePaints     = new StringMap();
-    g_smGloveInfo       = new StringMap();
-    g_arGlovesNum       = new ArrayList();
+    g_smGlovePaints         = new StringMap();
+    g_smGloveInfo           = new StringMap();
+    g_arGlovesNum           = new ArrayList();
 
     // Music Kits
-    g_arMusicKitsNum    = new ArrayList();
-    g_smMusicKitInfo    = new StringMap();
+    g_arMusicKitsNum        = new ArrayList();
+    g_smMusicKitInfo        = new StringMap();
 
     // Pins
-    g_arPinsNum         = new ArrayList();
-    g_smPinInfo         = new StringMap();
+    g_arPinsNum             = new ArrayList();
+    g_smPinInfo             = new StringMap();
+
+    // Coins
+    g_arCoinsSetsNum        = new ArrayList();
+    g_arCoinsNum            = new ArrayList();
+    g_smCoinsSets           = new StringMap();
+    g_smCoinsInfo           = new StringMap();
+
+    // Stickers
+    g_arStickersSetsNum     = new ArrayList();
+    g_arStickersNum         = new ArrayList();
+    g_smStickersSets        = new StringMap();
+    g_smStickersInfo        = new StringMap();
     
     g_cvHibernationWhenEmpty    = FindConVar("sv_hibernate_when_empty");
     g_iHibernateWhenEmpty       = g_cvHibernationWhenEmpty.IntValue;
@@ -58,7 +70,7 @@ public void OnPluginStart()
     CheckHibernation();
     ParseItems();
 
-    HookEvent("player_death", Event_PlayerDeath);
+    HookEvent("player_death",       Event_PlayerDeath);
     HookEvent("round_poststart",    Event_OnRoundStart);
     HookEvent("cs_pre_restart",     Event_OnRoundEnd);
 
@@ -102,6 +114,16 @@ public void OnPluginEnd()
 
     delete g_arPinsNum;
     delete g_smPinInfo;
+
+    delete g_arCoinsSetsNum;
+    delete g_arCoinsNum;
+    delete g_smCoinsSets;
+    delete g_smCoinsInfo;
+
+    delete g_arStickersSetsNum;
+    delete g_arStickersNum;
+    delete g_smStickersSets;
+    delete g_smStickersInfo;
 }
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
