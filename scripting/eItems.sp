@@ -9,7 +9,7 @@
 
 #define TAG_NCLR "[eItems]"
 #define AUTHOR "ESK0 (Original author: SM9)"
-#define VERSION "0.8"
+#define VERSION "0.9"
 
 #include "files/globals.sp"
 #include "files/client.sp"
@@ -17,6 +17,7 @@
 #include "files/natives.sp"
 #include "files/forwards.sp"
 #include "files/func.sp"
+#include "files/config.sp"
 
 
 public Plugin myinfo =
@@ -68,6 +69,19 @@ public void OnPluginStart()
     g_iHibernateWhenEmpty       = g_cvHibernationWhenEmpty.IntValue;
 
     CheckHibernation();
+
+    char szLocalFileFolder[PLATFORM_MAX_PATH];
+    BuildPath(Path_SM, szLocalFileFolder, sizeof(szLocalFileFolder), "data/eItems");
+    BuildPath(Path_SM, g_szLocalFilePath, sizeof(g_szLocalFilePath), "data/eItems/eItems.json");
+
+    BuildPath(Path_SM, g_szConfigFilePath, sizeof(g_szConfigFilePath), "configs/eItems.cfg");
+
+    if(!DirExists(szLocalFileFolder))
+    {
+        CreateDirectory(szLocalFileFolder, 511);
+    }
+
+    LoadConfig();
     ParseItems();
 
     HookEvent("player_death",       Event_PlayerDeath);
@@ -84,16 +98,6 @@ public void OnPluginStart()
     PrepSDKCall_AddParameter(SDKType_PlainOldData, SDKPass_Plain);
 
     g_hSwitchWeaponCall = EndPrepSDKCall();
-
-
-    char szLocalFileFolder[PLATFORM_MAX_PATH];
-    BuildPath(Path_SM, szLocalFileFolder, sizeof(szLocalFileFolder), "data/eItems");
-    BuildPath(Path_SM, g_szLocalFilePath, sizeof(g_szLocalFilePath), "data/eItems/eItems.json");
-    
-    if(!DirExists(szLocalFileFolder))
-    {
-        CreateDirectory(szLocalFileFolder, 511);
-    }
 }
 
 public void OnPluginEnd()

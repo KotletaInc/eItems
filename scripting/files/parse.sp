@@ -1,9 +1,19 @@
 public void ParseItems()
 {
+    char szFileToDownload[24];
+    if(StrEqual(g_szLanguageCode, "en", false))
+    {
+        Format(szFileToDownload, sizeof(szFileToDownload), "items.json");
+    }
+    else
+    {
+       Format(szFileToDownload, sizeof(szFileToDownload), "items_%s.json", g_szLanguageCode);
+    }
+
     PrintToServer("%s Downloading eItems data from API", TAG_NCLR);
     HTTPClient httpClient = new HTTPClient("https://api.hexa-core.eu/plugins/eitems");
     httpClient.SetHeader("User-Agent", "eItems HTTP Client 1.0 (730)");
-    httpClient.Get("items.json", PraseItemsDownloaded);
+    httpClient.Get(szFileToDownload, PraseItemsDownloaded);
 }
 
 public void PraseItemsDownloaded(HTTPResponse response, any value)
@@ -20,7 +30,7 @@ public void PraseItemsDownloaded(HTTPResponse response, any value)
         LoadBackup();
         return;
     }
-    PrintToServer("%s eItems data downloaded successfully", TAG_NCLR);
+    PrintToServer("%s eItems data for '%s' language downloaded successfully", TAG_NCLR, g_szLanguageCode);
     BackupJson(response.Data);
 }
 
@@ -115,7 +125,6 @@ public void ParseData(JSONObject jRoot)
     delete jPatches;
     delete jSprayes;
     delete jStickers;
-
     float fEnd = GetEngineTime();
     PrintToServer("%s Items synced successfully in %0.5f seconds", TAG_NCLR, fEnd - g_fStart);
     g_bItemsSynced = true;

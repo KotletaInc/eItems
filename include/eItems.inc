@@ -114,10 +114,10 @@ native int      eItems_FindWeaponByClassName(int client, const char[] szClassNam
 native bool     eItems_RefillClipAmmo(int iWeapon);
 native bool     eItems_RefillReserveAmmo(int iWeapon);
 native bool     eItems_IsValidWeapon(int iWeapon);
-native int      eItems_GiveWeapon(int client, const char[] szClassName, int iReserveAmmo = -1, int iClipAmmo = -1, int iSwitchTo = -1);
+native int      eItems_GiveWeapon(int client, const char[] szClassName, int iReserveAmmo = -1, int iClipAmmo = -1, int iSwitchTo = -1, bool bSwitchAnimation = true);
 native bool     eItems_RemoveKnife(int client);
 native bool     eItems_RemoveWeapon(int client, int iWeapon);
-native int      eItems_RespawnWeapon(int client, int iWeapon);
+native int      eItems_RespawnWeapon(int client, int iWeapon, bool bSwitchAnimation = true);
 native int      eItems_RespawnWeaponBySlot(int client, int iWeaponSlot);
 native int      eItems_RemoveAllWeapons(int client, int iSkipSlot = -1);
 native bool     eItems_SetWeaponAmmo(int iWeapon, int iReserveAmmo = -1, int iClipAmmo = -1);
@@ -237,6 +237,7 @@ native int      eItems_GetSkinDefIndexBySkinNum(int iSkinNum);
 native bool     eItems_GetSkinDisplayNameByDefIndex(int iDefIndex, char[] szBuffer, int iLength);
 native bool     eItems_GetSkinDisplayNameBySkinNum(int iSkinNum, char[] szBuffer, int iLength);
 native bool     eItems_IsNativeSkin(int iSkinNum, int iItemNum, int iItemType);
+native bool     eItems_IsNativeSkinByDefIndex(int iSkinDefIndex, int iItemDefIndex, int iItemType);
 
 /*              Gloves             */
 

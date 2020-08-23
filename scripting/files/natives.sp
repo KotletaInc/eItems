@@ -131,6 +131,7 @@ public void CreateNatives()
     CreateNative("eItems_GetSkinDisplayNameByDefIndex", Native_GetSkinDisplayNameByDefIndex);
     CreateNative("eItems_GetSkinDisplayNameBySkinNum", Native_GetSkinDisplayNameBySkinNum);
     CreateNative("eItems_IsNativeSkin", Native_IsNativeSkin);
+    CreateNative("eItems_IsNativeSkinByDefIndex", Native_IsNativeSkinByDefIndex);
 
     /*              Gloves            */
 
@@ -1153,8 +1154,9 @@ public int Native_GiveWeapon(Handle hPlugin, int iNumParams)
     int iReserveAmmo = GetNativeCell(3);
     int iClipAmmo = GetNativeCell(4);
     int iSwitchTo = GetNativeCell(5);
+    bool bSwitchAnimation = GetNativeCell(6);
 
-    return GiveWeapon(client, szClassName, iReserveAmmo, iClipAmmo, iSwitchTo);
+    return GiveWeapon(client, szClassName, iReserveAmmo, iClipAmmo, iSwitchTo, bSwitchAnimation);
 }
 
 public int Native_RemoveKnife(Handle hPlugin, int iNumParams)
@@ -1174,10 +1176,11 @@ public int Native_RemoveWeapon(Handle hPlugin, int iNumParams)
 
 public int Native_RespawnWeapon(Handle hPlugin, int iNumParams)
 {
-	int client = GetNativeCell(1);
-	int iWeapon = GetNativeCell(2);
-	
-	return RespawnWeapon(client, iWeapon);
+    int client = GetNativeCell(1);
+    int iWeapon = GetNativeCell(2);
+    bool bSwitchAnimation = GetNativeCell(3);
+
+    return RespawnWeapon(client, iWeapon, bSwitchAnimation);
 }
 
 public int Native_RespawnWeaponBySlot(Handle hPlugin, int iNumParams)
@@ -1324,6 +1327,20 @@ public int Native_IsNativeSkin(Handle hPlugin, int iNumParams)
     }
     
     return IsNativeSkin(iSkinNum, iItemNum, iItemType);
+}
+
+public int Native_IsNativeSkinByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iSkinDefIndex = GetNativeCell(1);
+    int iItemDefIndex = GetNativeCell(2);
+    int iItemType = GetNativeCell(3);
+
+    if(iItemType < 0 || iItemType > 1)
+    {
+        return false;
+    }
+    
+    return IsNativeSkinByDefIndex(iSkinDefIndex, iItemDefIndex, iItemType);
 }
 
 public int Native_GetGlovesNumByDefIndex(Handle hPlugin, int iNumParams)

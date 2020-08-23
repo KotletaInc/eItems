@@ -1451,7 +1451,7 @@ public bool RefillReserveAmmo(int iWeapon)
     return SetWeaponAmmo(iWeapon, iReserveAmmo, -1);
 }
 
-public int GiveWeapon(int client, const char[] szClassName, int iReserveAmmo, int iClipAmmo, int iSwitchTo)
+stock int GiveWeapon(int client, const char[] szClassName, int iReserveAmmo, int iClipAmmo, int iSwitchTo, bool bSwitchAnimation = true)
 {
 
     if (!IsValidClient(client, true))
@@ -1642,7 +1642,7 @@ public int GiveWeapon(int client, const char[] szClassName, int iReserveAmmo, in
 	
     int iActiveWeapon = GetActiveWeapon(client);
 	
-    if(iActiveWeapon == iWeapon)
+    if(iActiveWeapon == iWeapon && bSwitchAnimation)
     {
         if(iSwitchWeapon == iWeapon)
         {
@@ -1751,7 +1751,7 @@ public int GiveWeapon(int client, const char[] szClassName, int iReserveAmmo, in
         iViewModel = GetEntPropEnt(client, Prop_Send, "m_hViewModel");
     }
 
-    if(IsValidEntity(iViewModel) && iViewSequence > -1)
+    if(IsValidEntity(iViewModel) && iViewSequence > -1 && bSwitchAnimation)
     {
         SetEntProp(iViewModel, Prop_Send, "m_nSequence", iViewSequence);
     }
@@ -1948,7 +1948,7 @@ public bool SetActiveWeapon(int client, int iWeapon)
     return true;
 }
 
-public int RespawnWeapon(int client, int iWeapon)
+stock int RespawnWeapon(int client, int iWeapon, bool bSwitchAnimation = true)
 {
     if(!IsValidClient(client, true))
     {
@@ -1991,7 +1991,7 @@ public int RespawnWeapon(int client, int iWeapon)
         iClipAmmo = GetEntProp(iWeapon, Prop_Send, "m_iClip1");
     }
 
-    return GiveWeapon(client, szClassName, iReserveAmmo, iClipAmmo, GetActiveWeaponSlot(client));
+    return GiveWeapon(client, szClassName, iReserveAmmo, iClipAmmo, GetActiveWeaponSlot(client), bSwitchAnimation);
 }
 
 public int GetActiveWeaponSlot(int client)
@@ -2210,6 +2210,39 @@ public bool IsNativeSkin(int iSkinNum, int iItemNum, int iItemType)
         {
             int iDefIndex = eItems_GetGlovesDefIndexByGlovesNum(iItemNum);
             IntToString(iDefIndex, szDefIndex, sizeof(szDefIndex));
+
+            ArrayList arGlovePaints = null;
+            g_smGlovePaints.GetValue(szDefIndex, arGlovePaints);
+            if(arGlovePaints == null)
+            {
+                return false;
+            }
+            return arGlovePaints.FindValue(iSkinDefIndex) != -1;
+        }
+    }
+    return false;
+}
+
+public bool IsNativeSkinByDefIndex(int iSkinDefIndex, int iItemDefIndex, int iItemType)
+{
+    char szDefIndex[12];
+    switch(iItemType)
+    {
+        case ITEMTYPE_WEAPON:
+        {
+            IntToString(iItemDefIndex, szDefIndex, sizeof(szDefIndex));
+
+            ArrayList arWeaponPaints = null;
+            g_smWeaponPaints.GetValue(szDefIndex, arWeaponPaints);
+            if(arWeaponPaints == null)
+            {
+                return false;
+            }
+            return arWeaponPaints.FindValue(iSkinDefIndex) != -1;
+        }
+        case ITEMTYPE_GLOVES:
+        {
+            IntToString(iItemDefIndex, szDefIndex, sizeof(szDefIndex));
 
             ArrayList arGlovePaints = null;
             g_smGlovePaints.GetValue(szDefIndex, arGlovePaints);
