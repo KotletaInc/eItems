@@ -74,6 +74,10 @@ enum struct eWeaponInfo
     float Spread;
     int Damage;
     int FullAuto;
+    bool HasRareInspect;
+    bool HasRareDraw;
+    int RareInspect;
+    int RareDraw;
 }
 
 enum struct eClientInfo

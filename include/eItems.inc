@@ -125,6 +125,10 @@ native bool     eItems_SetAllWeaponsAmmoByClassName(const char[] szClassName, in
 native bool     eItems_SetAllWeaponsAmmo(int iReserveAmmo = -1, int iClipAmmo = -1);
 native bool     eItems_SetActiveWeapon(int client, int iWeapon);
 native bool     eItems_DropWeapon(int client, int iWeapon);
+native bool		eItems_HasRareInspectByDefIndex(int iWeaponDefIndex);
+native bool		eItems_HasRareDrawByDefIndex(int iWeaponDefIndex);
+native int      eItems_GetRareInspectSequenceByDefIndex(int iWeaponDefIndex);
+native int      eItems_GetRareDrawSequenceByDefIndex(int iWeaponDefIndex);
 
     /*  ClassNames  */
 

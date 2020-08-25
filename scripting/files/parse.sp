@@ -147,6 +147,10 @@ public void ParseWeapons(JSONArray array)
     char szWepDefIndex[12];
     int iSkinDefIndex;
     int iWepDefIndex;
+    bool bHasRareInspect;
+    bool bHasRareDraw;
+    int iRareInspect;
+    int iRareDraw;
     int iTeam;
     int iSlot;
     int iClipAmmo;
@@ -165,6 +169,10 @@ public void ParseWeapons(JSONArray array)
         iSkinDefIndex = 0;
         iWepDefIndex = 0;
         iTeam = 0;
+        bHasRareInspect = false;
+        bHasRareDraw = false;
+        iRareInspect = -1;
+        iRareDraw = -1;
         iSlot = -1;
         iClipAmmo = -1;
         iReserveAmmo = -1;
@@ -183,6 +191,19 @@ public void ParseWeapons(JSONArray array)
         if(jItem.HasKey("slot"))
         {
             iSlot = jItem.GetInt("slot");
+        }
+        
+        bHasRareInspect = jItem.GetBool("has_rare_inspect");
+        bHasRareDraw = jItem.GetBool("has_rare_draw");
+
+        if(jItem.HasKey("rare_inspect"))
+        {
+            iRareInspect = jItem.GetInt("rare_inspect");
+        }
+
+        if(jItem.HasKey("rare_draw"))
+        {
+            iRareDraw = jItem.GetInt("rare_draw");
         }
         
         jItem.GetString("item_name", szWeaponDisplayName, sizeof(szWeaponDisplayName));
@@ -286,6 +307,10 @@ public void ParseWeapons(JSONArray array)
         WeaponInfo.FullAuto             = iFullAuto;
         WeaponInfo.CycleTime            = fCycleTime;
         WeaponInfo.Spread               = fSpread;
+        WeaponInfo.HasRareInspect       = bHasRareInspect;
+        WeaponInfo.HasRareDraw          = bHasRareDraw;
+        WeaponInfo.RareInspect          = iRareInspect;
+        WeaponInfo.RareDraw             = iRareDraw;
 
         g_smWeaponInfo.SetArray(szWepDefIndex, WeaponInfo, sizeof(eWeaponInfo));
         g_arWeaponsNum.Push(iWepDefIndex);

@@ -2126,6 +2126,70 @@ public bool SetAllWeaponsAmmoByClassName(const char[] szClassName, const int iRe
     }
     return true;
 }
+
+public bool HasRareInspectByDefIndex(int iWeaponDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDefIndex[12];
+    IntToString(iWeaponDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.HasRareInspect;
+}
+
+public bool HasRareDrawByDefIndex(int iWeaponDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDefIndex[12];
+    IntToString(iWeaponDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.HasRareDraw;
+}
+
+public int GetRareInspectSequenceByDefIndex(int iWeaponDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDefIndex[12];
+    IntToString(iWeaponDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.RareInspect;
+}
+
+public int GetRareDrawSequenceByDefIndex(int iWeaponDefIndex)
+{
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return false;
+    }
+
+    char szDefIndex[12];
+    IntToString(iWeaponDefIndex, szDefIndex, sizeof(szDefIndex));
+
+    eWeaponInfo WeaponInfo;
+    g_smWeaponInfo.GetArray(szDefIndex, WeaponInfo, sizeof(eWeaponInfo));
+
+    return WeaponInfo.RareDraw;
+}
     /*      Skins       */
 
 public bool IsSkinNumGloveApplicable(int iSkinNum)

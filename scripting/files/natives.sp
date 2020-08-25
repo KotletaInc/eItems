@@ -49,6 +49,12 @@ public void CreateNatives()
     CreateNative("eItems_SetAllWeaponsAmmoByClassName", Native_SetAllWeaponsAmmoByClassName);
     CreateNative("eItems_SetActiveWeapon", Native_SetActiveWeapon);
     CreateNative("eItems_DropWeapon", Native_DropWeapon);
+    CreateNative("eItems_HasRareInspectByDefIndex", Native_HasRareInspectByDefIndex);
+    CreateNative("eItems_HasRareDrawByDefIndex", Native_HasRareDrawByDefIndex);
+    CreateNative("eItems_GetRareInspectSequenceByDefIndex", Native_GetRareInspectSequenceByDefIndex);
+    CreateNative("eItems_GetRareDrawSequenceByDefIndex", Native_GetRareDrawSequenceByDefIndex);
+
+
     //ClassNames
     CreateNative("eItems_GetWeaponClassNameByWeaponNum", Native_GetWeaponClassNameByWeaponNum);
     CreateNative("eItems_GetWeaponClassNameByDefIndex", Native_GetWeaponClassNameByDefIndex);
@@ -1241,6 +1247,54 @@ public int Native_DropWeapon(Handle hPlugin, int iNumParams)
 	int iWeapon = GetNativeCell(2);
 	
 	return DropWeapon(client, iWeapon);
+}
+
+public int Native_HasRareInspectByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iWeaponDefIndex = GetNativeCell(1);
+
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return false;
+    }
+
+    return HasRareInspectByDefIndex(iWeaponDefIndex);
+}
+
+public int Native_HasRareDrawByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iWeaponDefIndex = GetNativeCell(1);
+
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return false;
+    }
+
+    return HasRareDrawByDefIndex(iWeaponDefIndex);
+}
+
+public int Native_GetRareInspectSequenceByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iWeaponDefIndex = GetNativeCell(1);
+
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return -1;
+    }
+
+    return GetRareInspectSequenceByDefIndex(iWeaponDefIndex);
+}
+
+public int Native_GetRareDrawSequenceByDefIndex(Handle hPlugin, int iNumParams)
+{
+    int iWeaponDefIndex = GetNativeCell(1);
+
+    if(g_arWeaponsNum.FindValue(iWeaponDefIndex) == -1)
+    {
+        return -1;
+    }
+
+    return GetRareDrawSequenceByDefIndex(iWeaponDefIndex);
 }
 
 public int Native_IsSkinNumGloveApplicable(Handle hPlugin, int iNumParams)

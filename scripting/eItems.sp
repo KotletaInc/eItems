@@ -9,7 +9,7 @@
 
 #define TAG_NCLR "[eItems]"
 #define AUTHOR "ESK0 (Original author: SM9)"
-#define VERSION "0.9"
+#define VERSION "0.10"
 
 #include "files/globals.sp"
 #include "files/client.sp"
