@@ -31,7 +31,7 @@ public void PraseItemsDownloaded(HTTPResponse response, any value)
         return;
     }
     PrintToServer("%s eItems data for '%s' language downloaded successfully", TAG_NCLR, g_szLanguageCode);
-    BackupJson(response.Data);
+    LoadBackup();
 }
 
 public void LoadBackup()
